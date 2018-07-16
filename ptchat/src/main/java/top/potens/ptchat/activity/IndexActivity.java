@@ -17,7 +17,7 @@ public class IndexActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("222", "onCreate: ");
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main1);
 
     }
 }
