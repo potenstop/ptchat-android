@@ -14,37 +14,44 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import top.potens.teleport.R;
-import top.potens.teleport.adapter.ChatMessageAdapter;
-import top.potens.teleport.adapter.FaceVPAdapter;
-import top.potens.teleport.adapter.SmallFaceAdapter;
-import top.potens.teleport.bean.FriendUserBean;
-import top.potens.teleport.bean.MessageBean;
-import top.potens.teleport.constant.HandlerCode;
-import top.potens.teleport.helper.FaceHelper;
-import top.potens.teleport.util.AudioRecordUtil;
-import top.potens.teleport.util.PermissionUtil;
-import top.potens.teleport.view.CirclePlayProgress;
-import top.potens.teleport.view.CustomRelativeLayout;
-import top.potens.teleport.view.MultiLineEditText;
+import top.potens.ptchat.adapter.ChatMessageAdapter;
+import top.potens.ptchat.adapter.FaceVPAdapter;
+import top.potens.ptchat.adapter.SmallFaceAdapter;
+import top.potens.ptchat.bean.MessageBean;
+import top.potens.ptchat.bean.UserBean;
+import top.potens.ptchat.helper.FaceHelper;
+import top.potens.ptchat.util.AudioRecordUtil;
+import top.potens.ptchat.util.DisplayUtil;
+import top.potens.ptchat.util.FileManageUtil;
+import top.potens.ptchat.util.PermissionUtil;
+import top.potens.ptchat.view.CirclePlayProgress;
+import top.potens.ptchat.view.KeyboardRelativeLayout;
+import top.potens.ptchat.view.MultiLineEditText;
+
+import top.potens.ptchat.R;
 
 
 /**
@@ -57,7 +64,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private Context mContext;
     private FaceHelper mFaceHelper;
 
-    private FriendUserBean mFriendUserBean;
+    private UserBean mUserBean;
     private MultiLineEditText et_message;
     private List<MessageBean> messageBeanList;
     private ChatMessageAdapter mChatMessageAdapter;
@@ -79,29 +86,40 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     private Set<View> mutexView;  // 互斥的view
 
+    private final ActivityHandler mHandler = new ActivityHandler(this);
 
-    private Handler mHandler = new Handler() {
+    /**
+     * 耗时操作
+     */
+    private final Runnable sRunnable = new Runnable() {
         @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case HandlerCode.HTTP_REQUEST_SUC:
-                    mChatMessageAdapter.replaceAll(messageBeanList);
-                    mLastPosition = mChatMessageAdapter.getItemCount() - 1;
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) rv_message_list.getLayoutManager();
-                    if (mLastPosition > 7) {   // 判断当前长度是否大于7 防止列表过长时  smoothScrollToPosition时间过长
-                        layoutManager.setStackFromEnd(true);   //最后一个位于底部
-                    } else {
-                        layoutManager.setStackFromEnd(false);  // 第一个位于顶部
-                    }
-                    showKeyboard(et_message);
-                    isKeyboardShow = true;
-                    break;
-
-
-            }
+        public void run() {
+            
         }
     };
 
+    /**
+     * 更新ui
+     * 声明一个静态的Handler内部类，并持有外部类的弱引用
+     */
+    private static class ActivityHandler extends Handler {
+
+        private final WeakReference<ChatWindowActivity> mActivity;
+
+        private ActivityHandler(ChatWindowActivity activity) {
+            this.mActivity = new WeakReference<ChatWindowActivity>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            ChatWindowActivity activity = mActivity.get();
+            if (activity != null) {
+                
+            }
+        }
+    }
+    
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -191,8 +209,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        CustomRelativeLayout rl_chat_main = findViewById(R.id.rl_chat_main);
-        rl_chat_main.setOnSizeChangedListener(new CustomRelativeLayout.OnSizeChangedListener() {
+        KeyboardRelativeLayout rl_chat_main = findViewById(R.id.rl_chat_main);
+        rl_chat_main.setOnSizeChangedListener(new KeyboardRelativeLayout.OnSizeChangedListener() {
             @Override
             public void onSizeChanged(int w, int h, int oldWidth, int oldHeight) {
                 if (h > oldHeight) { // 键盘隐藏
@@ -299,7 +317,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
      * 初始化录音弹出窗口
      */
     private void initDialog() {
-        /*final String audioPath = FileManageUtil.getAudioPath() + "audio.amr";
+        final String audioPath = FileManageUtil.getAudioPath() + "audio.amr";
         View view = View.inflate(this, R.layout.record_dialog, null);
         mRecordDialog = new Dialog(this, R.style.DialogStyle);
         mRecordDialog.setContentView(view);
@@ -316,11 +334,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         window.setAttributes(lp);
 
-        Button btn_record_cancel = (Button) view.findViewById(R.id.btn_record_cancel);
-        Button btn_record_send = (Button) view.findViewById(R.id.btn_record_send);
-        TextView tv_timer = (TextView) view.findViewById(R.id.tv_timer);
+        Button btn_record_cancel =  view.findViewById(R.id.btn_record_cancel);
+        Button btn_record_send =  view.findViewById(R.id.btn_record_send);
+        TextView tv_timer = view.findViewById(R.id.tv_timer);
 
-        cpp_record_play = (CirclePlayProgress) view.findViewById(R.id.cpp_record_play);
+        cpp_record_play = view.findViewById(R.id.cpp_record_play);
+        // 录音取消
         btn_record_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -330,13 +349,14 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
             }
         });
+        // 录音上传
         btn_record_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FileUploadBean fileUploadBean = new FileUploadBean();
+              /*  FileUploadBean fileUploadBean = new FileUploadBean();
                 fileUploadBean.setOriginalPath(audioPath);
+                uploadAudio(fileUploadBean)*/;
                 mAudioRecord.reset();
-                uploadAudio(fileUploadBean);
                 mRecordDialog.dismiss();
 
                 cpp_record_play.setImageResource(R.drawable.ic_action_playback_pause_big);
@@ -360,7 +380,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 cpp_record_play.setImageResource(R.drawable.ic_action_playback_play_big);
 
             }
-        });*/
+        });
 
 
     }
@@ -381,14 +401,14 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     @Override
     public void onCreateCustomToolBar(Toolbar toolbar) {
-        mFriendUserBean = (FriendUserBean) getIntent().getSerializableExtra("userInfo");
+        mUserBean = (UserBean) getIntent().getSerializableExtra("userInfo");
 
         super.onCreateCustomToolBar(toolbar);
         getLayoutInflater().inflate(R.layout.toobar_chat_window, toolbar);
 
         TextView tv_back =  toolbar.findViewById(R.id.tv_back);
         TextView tv_user_name =  toolbar.findViewById(R.id.tv_user_name);
-        tv_user_name.setText(mFriendUserBean.getName());
+        tv_user_name.setText(mUserBean.getUserName());
         tv_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -448,7 +468,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //unregisterReceiver(mNewMessageReceiver);
+        // unregisterReceiver(mNewMessageReceiver);
+        mAudioRecord.reset();
 
     }
 
@@ -553,42 +574,37 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.ib_voice:
-                if (record_container.getVisibility() == View.GONE) {
-                    record_container.setVisibility(View.VISIBLE);
-                    hiddenOutSelf(record_container);
-                } else {
-                    record_container.setVisibility(View.GONE);
-                }
-                PermissionUtil.requestPermission(this, Manifest.permission.RECORD_AUDIO);
-                PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int i = view.getId();
+        if (i == R.id.ib_voice) {
+            if (record_container.getVisibility() == View.GONE) {
+                record_container.setVisibility(View.VISIBLE);
+                hiddenOutSelf(record_container);
+            } else {
+                record_container.setVisibility(View.GONE);
+            }
+            PermissionUtil.requestPermission(this, Manifest.permission.RECORD_AUDIO);
+            PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-                break;
-            case R.id.ib_image:
-                //chooseImage();  // 选择照片
-                break;
-            case R.id.ib_camera:
-                //startActivity(new Intent(mContext, TestActivity.class));
-                break;
-            case R.id.ib_face:   //打开表情仓库
-                if (face_container.getVisibility() == View.GONE) {
-                    face_container.setVisibility(View.VISIBLE);
-                    hiddenOutSelf(face_container);
-                } else {
-                    face_container.setVisibility(View.GONE);
-                }
-                break;
-            case R.id.ib_more:
-                break;
-            case R.id.ib_calculator:
-                //startActivity(new Intent(mContext,CalculatorActivity.class));
-                break;
-            case R.id.ib_start_intercom: // 对讲开始录音
-                startRecord(view);
+        } else if (i == R.id.ib_image) {//chooseImage();  // 选择照片
 
-            default:
-                break;
+        } else if (i == R.id.ib_camera) {//startActivity(new Intent(mContext, TestActivity.class));
+
+        } else if (i == R.id.ib_face) {
+            if (face_container.getVisibility() == View.GONE) {
+                face_container.setVisibility(View.VISIBLE);
+                hiddenOutSelf(face_container);
+            } else {
+                face_container.setVisibility(View.GONE);
+            }
+
+        } else if (i == R.id.ib_more) {
+        } else if (i == R.id.ib_calculator) {//startActivity(new Intent(mContext,CalculatorActivity.class));
+
+        } else if (i == R.id.ib_start_intercom) {
+            startRecord(view);
+
+
+        } else {
         }
     }
 
@@ -809,5 +825,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         }
     }
+
 
 }

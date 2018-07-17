@@ -17,7 +17,7 @@ import android.view.View;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import top.potens.teleport.R;
+import top.potens.ptchat.R;
 
 
 /**

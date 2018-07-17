@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import top.potens.teleport.helper.ToolBarHelper;
+import top.potens.ptchat.helper.ToolBarHelper;
 
 
 /**

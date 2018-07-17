@@ -12,13 +12,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-import top.potens.teleport.activity.IndexActivity;
 
 /**
  * Created by wenshao on 2018/6/29.
  */
 public class NetworkUtil {
-    private static final Logger logger = LoggerFactory.getLogger(IndexActivity.class);
+    private static final Logger logger = LoggerFactory.getLogger(NetworkUtil.class);
 
     // gps获取ip
     public static String getLocalIpAddress()

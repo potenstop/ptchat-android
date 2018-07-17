@@ -13,8 +13,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
-import top.potens.teleport.R;
-
+import top.potens.ptchat.R;
 /**
  * Created by wenshao on 2017/4/15.
  * qq默认小表情适配器

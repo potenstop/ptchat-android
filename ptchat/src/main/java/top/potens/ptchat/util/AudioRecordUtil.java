@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import top.potens.teleport.view.CirclePlayProgress;
+import top.potens.ptchat.view.CirclePlayProgress;
 
 /**
  * Created by wenshao on 2017/4/21.

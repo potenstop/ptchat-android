@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import top.potens.teleport.GlobalApplication;
-import top.potens.teleport.gif.AnimatedGifDrawable;
-import top.potens.teleport.gif.AnimatedImageSpan;
+import top.potens.ptchat.GlobalApplication;
+import top.potens.ptchat.gif.AnimatedGifDrawable;
+import top.potens.ptchat.gif.AnimatedImageSpan;
 
 /**
  * Created by wenshao on 2017/4/14.
@@ -57,7 +57,7 @@ public class FaceHelper {
      * @return
      */
     public SpannableStringBuilder getFace(String path) {
-        Context mContent = GlobalApplication.getAppContext();
+        Context context = GlobalApplication.getAppContext();
         SpannableStringBuilder sb = new SpannableStringBuilder();
         try {
             /**
@@ -68,8 +68,8 @@ public class FaceHelper {
             String tempText = "#[" + path + "]#";
             sb.append(tempText);
             sb.setSpan(
-                    new ImageSpan(mContent, BitmapFactory
-                            .decodeStream(mContent.getAssets().open(path))), sb.length()
+                    new ImageSpan(context, BitmapFactory
+                            .decodeStream(context.getAssets().open(path))), sb.length()
                             - tempText.length(), sb.length(),
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 

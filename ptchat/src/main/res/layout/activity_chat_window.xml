@@ -1,109 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<top.potens.teleport.view.CustomRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<top.potens.ptchat.view.KeyboardRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_chat_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/chatBackground"
-    android:id="@+id/rl_chat_main">
-
+    android:background="@color/chatBackground">
 
 
     <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_message_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/rv_message_list"
-        android:layout_below="@+id/header"
-        android:layout_above="@+id/ll_foot" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="11dp" />
 
 
     <LinearLayout
+        android:id="@+id/ll_foot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="vertical"
-        android:id="@+id/ll_foot">
-
-        <top.potens.teleport.view.MultiLineEditText
-            android:padding="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/shape_rounded_edittext"
-            android:layout_margin="10dp"
-            android:id="@+id/et_message"
-            android:imeOptions="actionSend"
-            android:inputType="textMultiLine"
-            android:gravity="top"
-            android:minLines="1"
-            android:maxLines="3"/>
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:orientation="horizontal"
+            android:layout_height="45dp"
+            android:orientation="horizontal">
+
+            <top.potens.ptchat.view.MultiLineEditText
+                android:id="@+id/et_message"
+                android:layout_width="0dp"
+                android:layout_height="35dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="2dp"
+                android:layout_weight="5"
+                android:background="@drawable/shape_rounded_edittext"
+                android:imeOptions="actionSend"
+                android:inputType="textMultiLine"
+                android:maxLines="3"
+                android:minLines="1"/>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="43dp"
+                android:layout_weight="1"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginStart="5dp"
+                android:text="@string/send" />
+        </LinearLayout>
+
+
+        <LinearLayout
             android:id="@+id/ll_shortcut_icon"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp">
+            android:layout_marginRight="10dp"
+            android:orientation="horizontal">
+
             <ImageButton
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 android:id="@+id/ib_calculator"
-                android:src="@mipmap/ic_action_calculator_holo"
-                android:background="@null"
-                android:layout_weight="1" />
-            <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_action_calculator_holo" />
+
+            <ImageButton
                 android:id="@+id/ib_voice"
-                android:src="@mipmap/ic_action_mic_holo"
-                android:background="@null"
-                android:layout_weight="1" />
-            <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_action_mic_holo" />
+
+            <ImageButton
                 android:id="@+id/ib_image"
-                android:src="@mipmap/ic_action_picture_holo"
-                android:background="@null"
-                android:layout_weight="1"/>
-            <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_action_picture_holo" />
+
+            <ImageButton
                 android:id="@+id/ib_camera"
-                android:src="@mipmap/ic_action_camera_holo"
-                android:background="@null"
-                android:layout_weight="1"/>
-            <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_action_camera_holo" />
+
+            <ImageButton
                 android:id="@+id/ib_face"
-                android:src="@mipmap/ic_action_emo_laugh_holo"
-                android:background="@null"
-                android:layout_weight="1"/>
-            <ImageButton
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/ib_more"
-                android:src="@mipmap/ic_action_add_holo"
+                android:layout_weight="1"
                 android:background="@null"
-                android:layout_weight="1"/>
+                android:src="@mipmap/ic_action_emo_laugh_holo" />
+
+            <ImageButton
+                android:id="@+id/ib_more"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_action_add_holo" />
 
         </LinearLayout>
+
         <include
             android:id="@+id/face_container"
             layout="@layout/chat_face_container"
             android:visibility="gone" />
-        <include android:id="@+id/record_container"
-            layout="@layout/chat_record_container"
-            android:visibility="gone"/>
 
+        <include
+            android:id="@+id/record_container"
+            layout="@layout/chat_record_container"
+            android:visibility="gone" />
 
 
     </LinearLayout>
 
 
-
-
-
-
-
-</top.potens.teleport.view.CustomRelativeLayout>
+</top.potens.ptchat.view.KeyboardRelativeLayout>
 
 

@@ -1,9 +1,10 @@
 package top.potens.ptchat.adapter;
 
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.List;
 
@@ -17,13 +18,8 @@ public class FaceVPAdapter extends PagerAdapter {
 	}
 
 	@Override
-	public void destroyItem(View arg0, int arg1, Object arg2) {
-		((ViewPager) arg0).removeView(views.get(arg1));
-	}
-
-	@Override
-	public void finishUpdate(View arg0) {
-		// TODO Auto-generated method stub
+	public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+		container.removeView(views.get(position));
 	}
 
 	@Override
@@ -35,12 +31,11 @@ public class FaceVPAdapter extends PagerAdapter {
 		return 0;
 	}
 
-	// 初始化arg1位置的界面
+	@NonNull
 	@Override
-	public Object instantiateItem(View arg0, int arg1) {
-		((ViewPager) arg0).addView(views.get(arg1), 0);
-
-		return views.get(arg1);
+	public Object instantiateItem(@NonNull ViewGroup container, int position) {
+		container.addView(views.get(position), 0);
+		return views.get(position);
 	}
 
 	// 判断是否由对象生成界
@@ -60,8 +55,4 @@ public class FaceVPAdapter extends PagerAdapter {
 		return null;
 	}
 
-	@Override
-	public void startUpdate(View arg0) {
-		// TODO Auto-generated method stub
-	}
 }

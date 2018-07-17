@@ -14,10 +14,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import top.potens.teleport.R;
-import top.potens.teleport.bean.MessageBean;
-import top.potens.teleport.image.GlideApp;
-import top.potens.teleport.view.VoicePlayingView;
+import top.potens.ptchat.R;
+import top.potens.ptchat.bean.MessageBean;
+import top.potens.ptchat.image.GlideApp;
+import top.potens.ptchat.view.VoicePlayingView;
 
 
 /**
@@ -133,7 +133,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         @Override
         void setData(MessageBean messageBean) {
             super.setData(messageBean);
-            int head = messageBean.getFriendUserBean().getHead();
+            String head = messageBean.getFriendUserBean().getUserHead();
             GlideApp.with(mContext)
                     .load(head)
                     .into(rw_head);
@@ -199,7 +199,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         @Override
         void setData(MessageBean messageBean) {
             super.setData(messageBean);
-            int head = messageBean.getFriendUserBean().getHead();
+            String head = messageBean.getFriendUserBean().getUserHead();
 
             GlideApp.with(mContext)
                     .load(head)

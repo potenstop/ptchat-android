@@ -23,7 +23,7 @@
         android:textColor="@android:color/black"
         android:background="@drawable/aio_bg_eye_left"
         android:gravity="left" />
-    <top.potens.teleport.view.VoicePlayingView
+    <top.potens.ptchat.view.VoicePlayingView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/rw_head"

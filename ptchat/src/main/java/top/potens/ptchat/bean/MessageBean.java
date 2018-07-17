@@ -20,7 +20,7 @@ public class MessageBean implements Cloneable {
     private String content;
     private long create_time;
     private int location;
-    private FriendUserBean friendUserBean;
+    private UserBean userBean;
     private String sendCode;
     private int duration;  // 音频或视频的时长
     private String receive_id;
@@ -90,12 +90,12 @@ public class MessageBean implements Cloneable {
         this.create_time = create_time;
     }
 
-    public FriendUserBean getFriendUserBean() {
-        return friendUserBean;
+    public UserBean getFriendUserBean() {
+        return userBean;
     }
 
-    public void setFriendUserBean(FriendUserBean friendUserBean) {
-        this.friendUserBean = friendUserBean;
+    public void setUserBean(UserBean userBean) {
+        this.userBean = userBean;
     }
 
     public String getSendCode() {
