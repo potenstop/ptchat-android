@@ -3,6 +3,7 @@ package top.potens.ptchat.activity;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -31,6 +32,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.zhihu.matisse.Matisse;
+import com.zhihu.matisse.MimeType;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,6 +46,7 @@ import top.potens.ptchat.adapter.FaceVPAdapter;
 import top.potens.ptchat.adapter.SmallFaceAdapter;
 import top.potens.ptchat.bean.MessageBean;
 import top.potens.ptchat.bean.UserBean;
+import top.potens.ptchat.engine.Glide4Engine;
 import top.potens.ptchat.helper.FaceHelper;
 import top.potens.ptchat.util.AudioRecordUtil;
 import top.potens.ptchat.util.DisplayUtil;
@@ -620,6 +625,15 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         // 授权
         PermissionUtil.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Matisse.from(this)
+                .choose(MimeType.ofAll(), false)    // 选择 mime 的类型
+                .countable(true)
+                .maxSelectable(9)
+                // .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .thumbnailScale(0.85f)
+                .imageEngine(new Glide4Engine())
+                .forResult(1);
         /*RxGalleryFinal
                 .with(mContext)
                 .image()
