@@ -59,6 +59,10 @@ public class HandlerCode {
      */
     public final static int HTTP_INIT_SUC = 0x102;
 
+    // 图片选择返回码
+    public static final int REQUEST_IMAGE = 0x1000;
+
+
 
 
 

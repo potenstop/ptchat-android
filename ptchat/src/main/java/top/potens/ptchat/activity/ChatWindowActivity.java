@@ -3,10 +3,14 @@ package top.potens.ptchat.activity;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -15,6 +19,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -34,7 +39,9 @@ import android.widget.TextView;
 
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,6 +53,7 @@ import top.potens.ptchat.adapter.FaceVPAdapter;
 import top.potens.ptchat.adapter.SmallFaceAdapter;
 import top.potens.ptchat.bean.MessageBean;
 import top.potens.ptchat.bean.UserBean;
+import top.potens.ptchat.constant.HandlerCode;
 import top.potens.ptchat.engine.Glide4Engine;
 import top.potens.ptchat.helper.FaceHelper;
 import top.potens.ptchat.util.AudioRecordUtil;
@@ -92,6 +100,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private Set<View> mutexView;  // 互斥的view
 
     private final ActivityHandler mHandler = new ActivityHandler(this);
+
 
     /**
      * 耗时操作
@@ -578,20 +587,33 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     public void onClick(View view) {
         int i = view.getId();
         if (i == R.id.ib_voice) {
-            if (record_container.getVisibility() == View.GONE) {
-                record_container.setVisibility(View.VISIBLE);
-                hiddenOutSelf(record_container);
-            } else {
-                record_container.setVisibility(View.GONE);
-            }
-            PermissionUtil.requestPermission(this, Manifest.permission.RECORD_AUDIO);
-            PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        } else if (i == R.id.ib_image) {//
-            chooseImage();  // 选择照片
-
+            PermissionUtil.rxRequestPermission(this, new String[]{
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            },  new PermissionUtil.PermissionCallback() {
+                @Override
+                public void succeed() {
+                    ChatWindowActivity.this.openVoice();
+                }
+            });
+        } else if (i == R.id.ib_image) {
+            PermissionUtil.rxRequestPermission(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA}, new PermissionUtil.PermissionCallback() {
+                @Override
+                public void succeed() {
+                    ChatWindowActivity.this.openImage();
+                }
+            });
         } else if (i == R.id.ib_camera) {//startActivity(new Intent(mContext, TestActivity.class));
-
+            PermissionUtil.rxRequestPermission(this, new String[]{
+                    Manifest.permission.CAMERA}, new PermissionUtil.PermissionCallback() {
+                @Override
+                public void succeed() {
+                    ChatWindowActivity.this.openCamera();
+                }
+            });
         } else if (i == R.id.ib_face) {
             if (face_container.getVisibility() == View.GONE) {
                 face_container.setVisibility(View.VISIBLE);
@@ -601,12 +623,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             }
 
         } else if (i == R.id.ib_more) {
+
         } else if (i == R.id.ib_calculator) {//startActivity(new Intent(mContext,CalculatorActivity.class));
 
         } else if (i == R.id.ib_start_intercom) {
             startRecord(view);
-
-
         } else {
         }
     }
@@ -621,19 +642,29 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     }
 
-    private void chooseImage() {
-        // 授权
-        PermissionUtil.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    private void openVoice() {
+        if (record_container.getVisibility() == View.GONE) {
+            record_container.setVisibility(View.VISIBLE);
+            hiddenOutSelf(record_container);
+        } else {
+            record_container.setVisibility(View.GONE);
+        }
+    }
+
+    private void openImage() {
         Matisse.from(this)
-                .choose(MimeType.ofAll(), false)    // 选择 mime 的类型
-                .countable(true)
-                .maxSelectable(9)
-                // .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
-                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
-                .thumbnailScale(0.85f)
-                .imageEngine(new Glide4Engine())
-                .forResult(1);
+                .choose(MimeType.ofAll(), false)    // //照片视频全部显示
+                .countable(true)    // 有序图片
+                .maxSelectable(9)   // 最大选择数量
+                .capture(true)  // 打开相机
+                .captureStrategy(new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider")) // 拍照相关，媒体处理authority
+                //.gridExpectedSize(120)   // 图片显示表格的大小
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)   //图像选择和预览活动所需的方向。
+                .thumbnailScale(0.85f)  // 缩放比例
+                .imageEngine(new Glide4Engine())    // 图片加载引擎
+                .forResult(HandlerCode.REQUEST_IMAGE);  //请求码
+
+
         /*RxGalleryFinal
                 .with(mContext)
                 .image()
@@ -656,7 +687,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 })
                 .openGallery();*/
     }
-
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
+        Uri photoUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath())); // 传递路径
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);// 更改系统默认存储路径
+        startActivityForResult(intent, HandlerCode.REQUEST_IMAGE);
+    }
     /**
      * 上传多个图片
      */
@@ -833,5 +869,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         }
     }
 
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == HandlerCode.REQUEST_IMAGE && resultCode == RESULT_OK) {
+            List<Uri> uris = Matisse.obtainResult(data);
+            Log.d("Matisse", "mSelected: " + uris);
+        }
+    }
 }
