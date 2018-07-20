@@ -94,7 +94,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private final Runnable sRunnable = new Runnable() {
         @Override
         public void run() {
-            
+
         }
     };
 
@@ -115,11 +115,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             super.handleMessage(msg);
             ChatWindowActivity activity = mActivity.get();
             if (activity != null) {
-                
+
             }
         }
     }
-    
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -151,12 +151,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         et_message.setOnEditorActionListener(this);
         et_message.setOnBackspacePressListener(this);
 
-        ImageButton ib_voice =  findViewById(R.id.ib_voice);
-        ImageButton ib_image =  findViewById(R.id.ib_image);
-        ImageButton ib_camera =  findViewById(R.id.ib_camera);
-        ImageButton ib_emo =  findViewById(R.id.ib_face);
-        ImageButton ib_more =  findViewById(R.id.ib_more);
-        ImageButton ib_calculator =  findViewById(R.id.ib_calculator);
+        ImageButton ib_voice = findViewById(R.id.ib_voice);
+        ImageButton ib_image = findViewById(R.id.ib_image);
+        ImageButton ib_camera = findViewById(R.id.ib_camera);
+        ImageButton ib_emo = findViewById(R.id.ib_face);
+        ImageButton ib_more = findViewById(R.id.ib_more);
+        ImageButton ib_calculator = findViewById(R.id.ib_calculator);
 
 
         ib_voice.setOnClickListener(this);
@@ -167,23 +167,23 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         ib_calculator.setOnClickListener(this);
 
 
-        face_container =  findViewById(R.id.face_container);
-        record_container =  findViewById(R.id.record_container);
+        face_container = findViewById(R.id.face_container);
+        record_container = findViewById(R.id.record_container);
         //  添加互斥的view
         mutexView = new HashSet<>();
         mutexView.add(face_container);
         mutexView.add(record_container);
 
 
-        final ImageButton ib_start_intercom =  findViewById(R.id.ib_start_intercom);
+        final ImageButton ib_start_intercom = findViewById(R.id.ib_start_intercom);
         ib_start_intercom.setOnClickListener(this);
 
 
         //表情下小圆点
-        mViewPager =  findViewById(R.id.face_viewpager);
+        mViewPager = findViewById(R.id.face_viewpager);
 
 
-        rv_message_list =  findViewById(R.id.rv_message_list);
+        rv_message_list = findViewById(R.id.rv_message_list);
         //  在onCreate需要指定RecyclerView的Adapter  否则会报No adapter attached; skipping layout
         mChatMessageAdapter = new ChatMessageAdapter(mContext);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
@@ -252,7 +252,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private View smallPagerItem() {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(R.layout.face_gridview, null);//表情布局
-        GridView gridview =  layout.findViewById(R.id.chart_face_gv);
+        GridView gridview = layout.findViewById(R.id.chart_face_gv);
 
         List<String> subList = mFaceHelper.getAllSmallFace();
         SmallFaceAdapter smallFaceAdapter = new SmallFaceAdapter(mContext, subList);
@@ -289,8 +289,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
 
     }
-
-
 
 
     /**
@@ -334,8 +332,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         window.setAttributes(lp);
 
-        Button btn_record_cancel =  view.findViewById(R.id.btn_record_cancel);
-        Button btn_record_send =  view.findViewById(R.id.btn_record_send);
+        Button btn_record_cancel = view.findViewById(R.id.btn_record_cancel);
+        Button btn_record_send = view.findViewById(R.id.btn_record_send);
         TextView tv_timer = view.findViewById(R.id.tv_timer);
 
         cpp_record_play = view.findViewById(R.id.cpp_record_play);
@@ -355,7 +353,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             public void onClick(View v) {
               /*  FileUploadBean fileUploadBean = new FileUploadBean();
                 fileUploadBean.setOriginalPath(audioPath);
-                uploadAudio(fileUploadBean)*/;
+                uploadAudio(fileUploadBean)*/
+                ;
                 mAudioRecord.reset();
                 mRecordDialog.dismiss();
 
@@ -406,8 +405,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         super.onCreateCustomToolBar(toolbar);
         getLayoutInflater().inflate(R.layout.toobar_chat_window, toolbar);
 
-        TextView tv_back =  toolbar.findViewById(R.id.tv_back);
-        TextView tv_user_name =  toolbar.findViewById(R.id.tv_user_name);
+        TextView tv_back = toolbar.findViewById(R.id.tv_back);
+        TextView tv_user_name = toolbar.findViewById(R.id.tv_user_name);
         tv_user_name.setText(mUserBean.getUserName());
         tv_back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -463,8 +462,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         rv_message_list.smoothScrollToPosition(mLastPosition);
 
     }*/
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -585,7 +582,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             PermissionUtil.requestPermission(this, Manifest.permission.RECORD_AUDIO);
             PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        } else if (i == R.id.ib_image) {//chooseImage();  // 选择照片
+        } else if (i == R.id.ib_image) {//
+            chooseImage();  // 选择照片
 
         } else if (i == R.id.ib_camera) {//startActivity(new Intent(mContext, TestActivity.class));
 
@@ -618,36 +616,32 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     }
 
-   /* private void chooseImage() {
-        RxGalleryFinal
+    private void chooseImage() {
+        // 授权
+        PermissionUtil.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        PermissionUtil.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        /*RxGalleryFinal
                 .with(mContext)
                 .image()
                 .multiple()
                 .maxSize(8)
-                .imageLoader(ImageLoaderType.UNIVERSAL)
-                .subscribe(new RxBusResultSubscriber<ImageMultipleResultEvent>() {
+                .imageLoader(ImageLoaderType.GLIDE)
+                .subscribe(new RxBusResultDisposable<ImageMultipleResultEvent>() {
+
                     @Override
                     protected void onEvent(ImageMultipleResultEvent imageMultipleResultEvent) throws Exception {
-                        //Toast.makeText(getBaseContext(), "已选择" + imageMultipleResultEvent.getResult().size() + "张图片", Toast.LENGTH_SHORT).show();
-                        List<MediaBean> result = imageMultipleResultEvent.getResult();
-                        List<FileUploadBean> fileList = new ArrayList<>();
-                        for (MediaBean mediaBean : result) {
-                            FileUploadBean fileUploadBean = new FileUploadBean();
-                            fileUploadBean.setOriginalPath(mediaBean.getOriginalPath());
-                            fileList.add(fileUploadBean);
-                        }
-                        uploadImage(fileList);
+                        List<MediaBean> list = imageMultipleResultEvent.getResult();
+                        System.out.println(list);
                     }
 
                     @Override
-                    public void onCompleted() {
-                        super.onCompleted();
-                        Toast.makeText(getBaseContext(), "OVER", Toast.LENGTH_SHORT).show();
+                    public void onComplete() {
+                        super.onComplete();
+                        //Toast.makeText(getBaseContext(), "OVER", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .openGallery();
+                .openGallery();*/
     }
-*/
 
     /**
      * 上传多个图片
@@ -733,7 +727,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         rv_message_list.smoothScrollToPosition(mLastPosition);
         return messageList;
     }*/
-
     private void sendMsg(MessageBean messageBean) {
         /*JSONObject jsonObject = new JSONObject();
         String Url = messageBean.getContent();

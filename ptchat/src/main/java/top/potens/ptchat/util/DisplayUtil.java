@@ -1,7 +1,6 @@
 package top.potens.ptchat.util;
 
 import android.content.Context;
-
 /**
  * Created by wenshao on 2017/4/22.
  * dp、sp 转换为 px 的工具类
