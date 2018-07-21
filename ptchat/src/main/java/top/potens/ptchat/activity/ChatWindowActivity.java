@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.GridLayoutManager;
@@ -42,6 +44,7 @@ import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -608,7 +611,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             });
         } else if (i == R.id.ib_camera) {//startActivity(new Intent(mContext, TestActivity.class));
             PermissionUtil.rxRequestPermission(this, new String[]{
-                    Manifest.permission.CAMERA}, new PermissionUtil.PermissionCallback() {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionUtil.PermissionCallback() {
                 @Override
                 public void succeed() {
                     ChatWindowActivity.this.openCamera();
@@ -688,10 +691,34 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 .openGallery();*/
     }
     private void openCamera() {
+
+        //调用getExternalCacheDir()可以得到应用关联缓存目录，
+        // Android6.0之后读写SD卡被列为了危险权限，而这个目录不需要申请权限，
+        File photoFile = new File(this.getExternalCacheDir(),System.currentTimeMillis() + ".jpg");
+        try {
+            if (photoFile.exists()) {
+                photoFile.delete();
+            }
+            photoFile.createNewFile();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+        Uri imageFileUri = null;
+        if (Build.VERSION.SDK_INT >= 24) {
+            //如果是7.0 以上的版本就必须使用这个方法，
+            // 第一个参数是context,第二个参数可以是任意唯一的字符窜，
+            // 第三参数是我们刚刚建立的file对象。
+            //因为7.0以后直接使用本地真实路径的Uri本认为是不安全的，会抛出FileUriExposedException异常的
+            //而FileProvider这是一种特殊的内容提供器，它使用了和内容提供器类似的机制来对数据进行保护，
+            // 可以选择性的将封装过的Uri共享给外部，从而提高了应用的安全性。
+            imageFileUri = FileProvider.getUriForFile(this,"com.zhihu.matisse.sample.fileprovider",photoFile);
+        } else {
+            imageFileUri = Uri.fromFile(photoFile);//获取文件的Uri
+        }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
-        Uri photoUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath())); // 传递路径
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);// 更改系统默认存储路径
-        startActivityForResult(intent, HandlerCode.REQUEST_IMAGE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);// 更改系统默认存储路径
+        startActivityForResult(intent, HandlerCode.REQUEST_CAMERA);
     }
     /**
      * 上传多个图片
@@ -872,9 +899,13 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == HandlerCode.REQUEST_IMAGE && resultCode == RESULT_OK) {
             List<Uri> uris = Matisse.obtainResult(data);
             Log.d("Matisse", "mSelected: " + uris);
+        } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
+            Log.d("Matisse", "mSelected: " );
+
         }
     }
 }

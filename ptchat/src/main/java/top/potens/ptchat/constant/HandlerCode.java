@@ -61,6 +61,8 @@ public class HandlerCode {
 
     // 图片选择返回码
     public static final int REQUEST_IMAGE = 0x1000;
+    // 相机选择返回码
+    public static final int REQUEST_CAMERA = 0x1001;
 
 
 
