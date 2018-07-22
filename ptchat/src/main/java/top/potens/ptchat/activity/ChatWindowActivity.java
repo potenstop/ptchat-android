@@ -43,14 +43,23 @@ import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import top.potens.ptchat.GlobalApplication;
 import top.potens.ptchat.adapter.ChatMessageAdapter;
 import top.potens.ptchat.adapter.FaceVPAdapter;
 import top.potens.ptchat.adapter.SmallFaceAdapter;
@@ -77,6 +86,8 @@ import top.potens.ptchat.R;
 
 public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEditorActionListener, View.OnClickListener,
         MultiLineEditText.OnBackspacePressListener, ChatMessageAdapter.OnMessageItemClickListener {
+    private static final Logger logger = LoggerFactory.getLogger(ChatWindowActivity.class);
+
     private Context mContext;
     private FaceHelper mFaceHelper;
 
@@ -85,6 +96,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private List<MessageBean> messageBeanList;
     private ChatMessageAdapter mChatMessageAdapter;
     private RecyclerView rv_message_list;
+    private int chatListViewLastOffset;
+    private int chatListViewLastPosition;
     private LinearLayout face_container;
     private LinearLayout record_container;
     private Dialog mRecordDialog;
@@ -104,7 +117,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     private final ActivityHandler mHandler = new ActivityHandler(this);
 
-
+    private File cameraPhotoFile;
     /**
      * 耗时操作
      */
@@ -151,10 +164,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         InitFaceViewPager();
         initSocket();
         initReceiver();
-        //initData();
+        // initData();
 
-        // 图片选择多选触发事件
-        getMultiListener();
         initDialog();
         // 清除未读的消息
         cleanUnread();
@@ -225,6 +236,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
             }
+
         });
         KeyboardRelativeLayout rl_chat_main = findViewById(R.id.rl_chat_main);
         rl_chat_main.setOnSizeChangedListener(new KeyboardRelativeLayout.OnSizeChangedListener() {
@@ -235,8 +247,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                     isKeyboardShow = false;
                 } else { // 键盘显示
                     isKeyboardShow = true;
+
                     // 平滑滚动到指定的位置
-                    if (mLastPosition > 0) rv_message_list.smoothScrollToPosition(mLastPosition);
+                    if(rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
+                        ((LinearLayoutManager) rv_message_list.getLayoutManager()).scrollToPositionWithOffset(chatListViewLastPosition, chatListViewLastOffset);
+                    }
 
                 }
 
@@ -307,26 +322,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     }
 
-
-    /**
-     * 多选事件都会在这里执行
-     */
-    public void getMultiListener() {
-        /*//得到多选的事件
-        RxGalleryListener.getInstance().setMultiImageCheckedListener(new IMultiImageCheckedListener() {
-
-            @Override
-            public void selectedImg(Object t, boolean isChecked) {
-
-
-            }
-
-            @Override
-            public void selectedImgMax(Object t, boolean isChecked, int maxSize) {
-                ToastUtil.show(getBaseContext(), "你最多只能选择" + maxSize + "张图片");
-            }
-        });*/
-    }
 
     /**
      * 初始化录音弹出窗口
@@ -524,7 +519,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private void setScrollLocation(RecyclerView recyclerView, int newState) {
         //当前状态为停止滑动状态SCROLL_STATE_IDLE时
         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-            //et_message.setFocusable(true);
+            /*//et_message.setFocusable(true);
             RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
             if (layoutManager instanceof GridLayoutManager) {
                 //通过LayoutManager找到当前显示的最后的item的position
@@ -537,13 +532,23 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 int[] lastPositions = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
                 ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(lastPositions);
                 mLastPosition = findMax(lastPositions);
-            }
+            }*/
 
             //时判断界面显示的最后item的position是否等于itemCount总数-1也就是最后一个item的position
             //如果相等则说明已经滑动到最后了
                     /*if (mLastPosition == recyclerView.getLayoutManager().getItemCount() - 1) {
                         Toast.makeText(ChatWindowActivity.this, "滑动到底了", Toast.LENGTH_SHORT).show();
                     }*/
+            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+            //获取可视的第一个view
+            View topView = layoutManager.getChildAt(0);
+            if(topView != null) {
+                // 获取与该view的顶部的偏移量
+                chatListViewLastOffset = topView.getTop();
+                // 得到该View的数组位置
+                chatListViewLastPosition = layoutManager.getPosition(topView);
+            }
+
         }
     }
 
@@ -552,9 +557,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             View v = getCurrentFocus();
             if (!isEditText(v, ev)) {
-
                 hideKeyboard(v);
-                //hideAllShortcut();
             }
             return super.dispatchTouchEvent(ev);
         }
@@ -593,7 +596,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
-            },  new PermissionUtil.PermissionCallback() {
+            }, new PermissionUtil.PermissionCallback() {
                 @Override
                 public void succeed() {
                     ChatWindowActivity.this.openVoice();
@@ -602,14 +605,13 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         } else if (i == R.id.ib_image) {
             PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA}, new PermissionUtil.PermissionCallback() {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionUtil.PermissionCallback() {
                 @Override
                 public void succeed() {
                     ChatWindowActivity.this.openImage();
                 }
             });
-        } else if (i == R.id.ib_camera) {//startActivity(new Intent(mContext, TestActivity.class));
+        } else if (i == R.id.ib_camera) {
             PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionUtil.PermissionCallback() {
                 @Override
@@ -690,21 +692,23 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 })
                 .openGallery();*/
     }
+
     private void openCamera() {
 
         //调用getExternalCacheDir()可以得到应用关联缓存目录，
         // Android6.0之后读写SD卡被列为了危险权限，而这个目录不需要申请权限，
-        File photoFile = new File(this.getExternalCacheDir(),System.currentTimeMillis() + ".jpg");
+        cameraPhotoFile = new File(this.getExternalCacheDir(), System.currentTimeMillis() + ".jpg");
         try {
-            if (photoFile.exists()) {
-                photoFile.delete();
+            if (cameraPhotoFile.exists()) {
+                boolean delete = cameraPhotoFile.delete();
+                if (delete) {
+                    boolean isFile = cameraPhotoFile.createNewFile();
+                }
             }
-            photoFile.createNewFile();
         } catch (IOException e) {
-
-            e.printStackTrace();
+            logger.error("openCamera error", e);
         }
-        Uri imageFileUri = null;
+        Uri imageFileUri;
         if (Build.VERSION.SDK_INT >= 24) {
             //如果是7.0 以上的版本就必须使用这个方法，
             // 第一个参数是context,第二个参数可以是任意唯一的字符窜，
@@ -712,14 +716,15 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             //因为7.0以后直接使用本地真实路径的Uri本认为是不安全的，会抛出FileUriExposedException异常的
             //而FileProvider这是一种特殊的内容提供器，它使用了和内容提供器类似的机制来对数据进行保护，
             // 可以选择性的将封装过的Uri共享给外部，从而提高了应用的安全性。
-            imageFileUri = FileProvider.getUriForFile(this,"com.zhihu.matisse.sample.fileprovider",photoFile);
+            imageFileUri = FileProvider.getUriForFile(this, "com.zhihu.matisse.sample.fileprovider", cameraPhotoFile);
         } else {
-            imageFileUri = Uri.fromFile(photoFile);//获取文件的Uri
+            imageFileUri = Uri.fromFile(cameraPhotoFile);//获取文件的Uri
         }
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);// 启动系统相机
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);// 更改系统默认存储路径
         startActivityForResult(intent, HandlerCode.REQUEST_CAMERA);
     }
+
     /**
      * 上传多个图片
      */
@@ -901,10 +906,31 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == HandlerCode.REQUEST_IMAGE && resultCode == RESULT_OK) {
-            List<Uri> uris = Matisse.obtainResult(data);
-            Log.d("Matisse", "mSelected: " + uris);
+            List<String> strings = Matisse.obtainPathResult(data);
+
+
+            List<MessageBean> messageList = new ArrayList<>();
+            for (String  uri : strings) {
+                MessageBean messageBean = new MessageBean();
+                messageBean.setLocation(MessageBean.LOCATION_RIGHT);
+                messageBean.setType(MessageBean.TYPE_IMAGE);
+                messageBean.setContent("file://" + uri);
+                messageBean.setUserBean(mUserBean);
+                messageBean.setSend_id("11111111");
+                messageBean.setSendCode("1111");
+                messageList.add(messageBean);
+            }
+            mChatMessageAdapter.addAll(messageList);
+            mLastPosition = mChatMessageAdapter.getItemCount();
+            // 添加到mChatMessageAdapter中
+            // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
+            rv_message_list.smoothScrollToPosition(mLastPosition);
+
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
-            Log.d("Matisse", "mSelected: " );
+            // URI uri = cameraPhotoFile.toURI();
+
+
+            System.out.println(cameraPhotoFile);
 
         }
     }

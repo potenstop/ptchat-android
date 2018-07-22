@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import top.potens.ptchat.R;
 import top.potens.ptchat.bean.MessageBean;
+import top.potens.ptchat.helper.FaceHelper;
 import top.potens.ptchat.image.GlideApp;
 import top.potens.ptchat.view.VoicePlayingView;
 
@@ -52,7 +54,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public void addAll(List<MessageBean> list) {
         if (dataList != null && list != null) {
             dataList.addAll(list);
-            //notifyItemRangeChanged(dataList.size(), list.size());
+            notifyItemRangeChanged(dataList.size(), list.size());
         }
         notifyDataSetChanged();
     }
@@ -60,7 +62,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public void add(MessageBean messageBean) {
         if (messageBean != null) {
             dataList.add(messageBean);
-            //notifyItemRangeChanged(dataList.size(), 1);
+            notifyItemRangeChanged(dataList.size(), 1);
         }
         notifyDataSetChanged();
     }
@@ -137,7 +139,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             GlideApp.with(mContext)
                     .load(head)
                     .into(rw_head);
-            /*if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
+            if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());
 
                 rw_content.setVisibility(View.GONE);
@@ -149,17 +151,18 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 vpv_audio.setVisibility(View.GONE);
 
                 rw_content.setVisibility(View.VISIBLE);
-
-                mImageLoader.displayImage(messageBean.getContent(), rw_content, mOptions);
+                GlideApp.with(mContext)
+                        .load(messageBean.getContent())
+                        .into(rw_content);
             } else if (messageBean.getType().equals(MessageBean.TYPE_AUDIO)) {
                 tv_content.setVisibility(View.GONE);
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.VISIBLE);
                 vpv_audio.setDuration(messageBean.getDuration());
-                String proxyUrl = mProxy.getProxyUrl(messageBean.getContent());
+                /*String proxyUrl = mProxy.getProxyUrl(messageBean.getContent());
 
-                vpv_audio.setMediaPlay(proxyUrl);
-            }*/
+                vpv_audio.setMediaPlay(proxyUrl);*/
+            }
 
         }
 
@@ -187,8 +190,6 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
             tv_content =  view.findViewById(R.id.tv_content);
             rw_content =  view.findViewById(R.id.rw_content);
-
-
             vpv_audio =  view.findViewById(R.id.vpv_audio);
 
             mListener=listener;
@@ -204,7 +205,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             GlideApp.with(mContext)
                     .load(head)
                     .into(rw_head);
-            /*if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
+            if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());
 
                 rw_content.setVisibility(View.GONE);
@@ -215,23 +216,24 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 tv_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.GONE);
                 rw_content.setVisibility(View.VISIBLE);
-                mImageLoader.displayImage(messageBean.getContent(), rw_content, mOptions);
-
+                GlideApp.with(mContext)
+                        .load(messageBean.getContent())
+                        .into(rw_content);
             } else if (messageBean.getType().equals(MessageBean.TYPE_AUDIO)){
                 tv_content.setVisibility(View.GONE);
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.VISIBLE);
                 vpv_audio.setDuration(messageBean.getDuration());
                 String proxyUrl;
-                if (messageBean.getContent().matches(fileRegex)){
+               /* if (messageBean.getContent().matches(fileRegex)){
                     proxyUrl=messageBean.getContent();
                 }else{
                     proxyUrl=mProxy.getProxyUrl(messageBean.getContent());
                 }
 
 
-                vpv_audio.setMediaPlay(proxyUrl);
-            }*/
+                vpv_audio.setMediaPlay(proxyUrl);*/
+            }
 
         }
 

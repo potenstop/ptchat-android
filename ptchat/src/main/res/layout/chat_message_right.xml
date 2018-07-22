@@ -24,7 +24,7 @@
         android:layout_toStartOf="@+id/rw_head"
         android:gravity="left"
         android:visibility="gone"/>
-    <com.wenshao.chat.view.VoicePlayingView
+    <top.potens.ptchat.view.VoicePlayingView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
