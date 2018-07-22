@@ -15,15 +15,15 @@ public class MessageBean implements Cloneable {
     public static final int LOCATION_RIGHT = 2;
 
 
-    private String send_id;
+    private String sendId;
     private String type;
     private String content;
-    private long create_time;
+    private long createTime;
     private int location;
     private UserBean userBean;
     private String sendCode;
     private int duration;  // 音频或视频的时长
-    private String receive_id;
+    private String receiveId;
 
 
 
@@ -58,12 +58,12 @@ public class MessageBean implements Cloneable {
         this.location = location;
     }
 
-    public String getSend_id() {
-        return send_id;
+    public String getSendId() {
+        return sendId;
     }
 
-    public void setSend_id(String send_id) {
-        this.send_id = send_id;
+    public void setSendId(String sendId) {
+        this.sendId = sendId;
     }
 
     public String getType() {
@@ -82,12 +82,12 @@ public class MessageBean implements Cloneable {
         this.content = content;
     }
 
-    public long getCreate_time() {
-        return create_time;
+    public long getCreateTime() {
+        return createTime;
     }
 
-    public void setCreate_time(long create_time) {
-        this.create_time = create_time;
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
     }
 
     public UserBean getFriendUserBean() {
@@ -106,11 +106,11 @@ public class MessageBean implements Cloneable {
         this.sendCode = sendCode;
     }
 
-    public String getReceive_id() {
-        return receive_id;
+    public String getReceiveId() {
+        return receiveId;
     }
 
-    public void setReceive_id(String receive_id) {
-        this.receive_id = receive_id;
+    public void setReceiveId(String receiveId) {
+        this.receiveId = receiveId;
     }
 }

@@ -3,9 +3,8 @@ package top.potens.ptchat;
 import android.app.Application;
 import android.content.Context;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.lang.ref.WeakReference;
 
 
 /**
@@ -15,12 +14,14 @@ import org.slf4j.LoggerFactory;
  */
 
 public class GlobalApplication extends Application {
-    private static final Logger logger = LoggerFactory.getLogger(GlobalApplication.class);
     private static Context mContext;
+    private static Ptchat mPtchat;
 
     public static Context getAppContext() {
         return mContext;
     }
+
+
 
     @Override
     public void onCreate() {
@@ -29,5 +30,10 @@ public class GlobalApplication extends Application {
         mContext = getApplicationContext();
     }
 
-
+    public static void setPtchat(Ptchat ptchat) {
+        mPtchat = ptchat;
+    }
+    public static Ptchat getPtchat() {
+        return mPtchat;
+    }
 }

@@ -8,7 +8,6 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -16,12 +15,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -43,18 +40,14 @@ import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,10 +61,12 @@ import top.potens.ptchat.bean.UserBean;
 import top.potens.ptchat.constant.HandlerCode;
 import top.potens.ptchat.engine.Glide4Engine;
 import top.potens.ptchat.helper.FaceHelper;
+import top.potens.ptchat.network.SendCallback;
 import top.potens.ptchat.util.AudioRecordUtil;
 import top.potens.ptchat.util.DisplayUtil;
 import top.potens.ptchat.util.FileManageUtil;
 import top.potens.ptchat.util.PermissionUtil;
+import top.potens.ptchat.util.ToastUtil;
 import top.potens.ptchat.view.CirclePlayProgress;
 import top.potens.ptchat.view.KeyboardRelativeLayout;
 import top.potens.ptchat.view.MultiLineEditText;
@@ -185,6 +180,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         ImageButton ib_emo = findViewById(R.id.ib_face);
         ImageButton ib_more = findViewById(R.id.ib_more);
         ImageButton ib_calculator = findViewById(R.id.ib_calculator);
+        Button message_send = findViewById(R.id.message_send);
 
 
         ib_voice.setOnClickListener(this);
@@ -193,6 +189,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         ib_emo.setOnClickListener(this);
         ib_more.setOnClickListener(this);
         ib_calculator.setOnClickListener(this);
+        message_send.setOnClickListener(this);
 
 
         face_container = findViewById(R.id.face_container);
@@ -249,7 +246,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                     isKeyboardShow = true;
 
                     // 平滑滚动到指定的位置
-                    if(rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
+                    if (rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
                         ((LinearLayoutManager) rv_message_list.getLayoutManager()).scrollToPositionWithOffset(chatListViewLastPosition, chatListViewLastOffset);
                     }
 
@@ -363,13 +360,9 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         btn_record_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-              /*  FileUploadBean fileUploadBean = new FileUploadBean();
-                fileUploadBean.setOriginalPath(audioPath);
-                uploadAudio(fileUploadBean)*/
-                ;
+                buildAudio(audioPath);
                 mAudioRecord.reset();
                 mRecordDialog.dismiss();
-
                 cpp_record_play.setImageResource(R.drawable.ic_action_playback_pause_big);
 
 
@@ -437,7 +430,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (EditorInfo.IME_ACTION_SEND == actionId) {  //发送按钮
-            //sendMessage();
+            sendMessage();
         }
         return true;
     }
@@ -445,11 +438,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     /**
      * 构建消息 JSON
      */
-    /*private void sendMessage() {
+    private void sendMessage() {
         String text = et_message.getText().toString().trim();
 
         if (TextUtils.isEmpty(text)) {
-            ToastUtil.show(mContext, "文本内容不能为空");
+            ToastUtil.showShortToast("文本内容不能为空");
             return;
         }
         MessageBean messageBean = new MessageBean();
@@ -461,10 +454,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setLocation(MessageBean.LOCATION_RIGHT);
         messageBean.setType(MessageBean.TYPE_TEXT);
         messageBean.setContent(text);
-        messageBean.setUserBean(SelfConstant.getUserBean());
-        messageBean.setSend_id(SelfConstant.getUserBean().getUser_id());
-        messageBean.setReceive_id(mReceiveUserBean.getUser_id());
-        messageBean.setCreate_time(new Date().getTime());
+        messageBean.setUserBean(this.mUserBean);
+        messageBean.setSendId("11111");
+        messageBean.setReceiveId("111");
+        messageBean.setCreateTime(new Date().getTime());
 
 
         sendMsg(messageBean);
@@ -473,7 +466,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
         rv_message_list.smoothScrollToPosition(mLastPosition);
 
-    }*/
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -542,7 +536,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
             //获取可视的第一个view
             View topView = layoutManager.getChildAt(0);
-            if(topView != null) {
+            if (topView != null) {
                 // 获取与该view的顶部的偏移量
                 chatListViewLastOffset = topView.getTop();
                 // 得到该View的数组位置
@@ -633,7 +627,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         } else if (i == R.id.ib_start_intercom) {
             startRecord(view);
+        } else if (i == R.id.message_send) {
+            sendMessage();
         } else {
+
         }
     }
 
@@ -668,29 +665,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 .thumbnailScale(0.85f)  // 缩放比例
                 .imageEngine(new Glide4Engine())    // 图片加载引擎
                 .forResult(HandlerCode.REQUEST_IMAGE);  //请求码
-
-
-        /*RxGalleryFinal
-                .with(mContext)
-                .image()
-                .multiple()
-                .maxSize(8)
-                .imageLoader(ImageLoaderType.GLIDE)
-                .subscribe(new RxBusResultDisposable<ImageMultipleResultEvent>() {
-
-                    @Override
-                    protected void onEvent(ImageMultipleResultEvent imageMultipleResultEvent) throws Exception {
-                        List<MediaBean> list = imageMultipleResultEvent.getResult();
-                        System.out.println(list);
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        super.onComplete();
-                        //Toast.makeText(getBaseContext(), "OVER", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .openGallery();*/
     }
 
     private void openCamera() {
@@ -725,64 +699,19 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         startActivityForResult(intent, HandlerCode.REQUEST_CAMERA);
     }
 
-    /**
-     * 上传多个图片
-     */
-    /*private void uploadImage(List<FileUploadBean> list) {
-        buildImage(list);
-        HttpUtil.syncMultiFileUpdate(getApplication(), UrlConstant.IMAGE_UPLOAD, list, new HttpCallback<FileUploadData>() {
-            @Override
-            public void onSuccess(FileUploadData resultType) {
 
-                for (FileUploadBean fileUploadBean : resultType.getMsg()) {
-                    sendMultiMsg(fileUploadBean.getFilePath(), MessageBean.TYPE_IMAGE, fileUploadBean.getSendCode());
-                }
-
-
-            }
-
-            @Override
-            public void onError(Throwable throwable, boolean b) {
-                super.onError(throwable, b);
-                Log.i(TAG, "onError: " + throwable.getMessage());
-            }
-        });
-    }
-
-    // 上传单个语音文件
-    private void uploadAudio(FileUploadBean fileUploadBean) {
-        final MessageBean messageBean = buildAudio(fileUploadBean);
-        HttpUtil.syncSingleFileUpdate(getApplication(), UrlConstant.AUDIO_UPLOAD, fileUploadBean, new HttpCallback<FileUploadData>() {
-            @Override
-            public void onSuccess(FileUploadData resultType) {
-                for (FileUploadBean fileUploadBean : resultType.getMsg()) {
-                    messageBean.setContent(fileUploadBean.getFilePath());
-                    sendMsg(messageBean);
-                }
-
-            }
-
-            @Override
-            public void onError(Throwable throwable, boolean b) {
-                super.onError(throwable, b);
-                Log.i(TAG, "onError: " + throwable.getMessage());
-            }
-        });
-    }
-
-    private MessageBean buildAudio(FileUploadBean fileUploadBean) {
+    private MessageBean buildAudio(String filepath) {
 
         MessageBean messageBean = new MessageBean();
         messageBean.setLocation(MessageBean.LOCATION_RIGHT);
         messageBean.setType(MessageBean.TYPE_AUDIO);
-        messageBean.setContent("file://" + fileUploadBean.getOriginalPath());
-        messageBean.setUserBean(SelfConstant.getUserBean());
-        messageBean.setSend_id(SelfConstant.getUserBean().getUser_id());
-        messageBean.setSendCode(fileUploadBean.getSendCode());
+        messageBean.setContent("file://" + filepath);
+        messageBean.setUserBean(mUserBean);
+        messageBean.setSendId("111");
+        messageBean.setSendCode("222");
         messageBean.setDuration(mAudioRecord.getDuration());
-        messageBean.setReceive_id(mReceiveUserBean.getUser_id());
-        messageBean.setCreate_time(new Date().getTime());
-        //messageBean.setDuration();
+        messageBean.setReceiveId("11");
+        messageBean.setCreateTime(new Date().getTime());
         mChatMessageAdapter.add(messageBean);
         mLastPosition = mChatMessageAdapter.getItemCount();
         rv_message_list.smoothScrollToPosition(mLastPosition);
@@ -790,76 +719,39 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     }
 
 
-    private List<MessageBean> buildImage(List<FileUploadBean> list) {
-        List<MessageBean> messageList = new ArrayList<>();
-        for (FileUploadBean fileUploadBean : list) {
-            MessageBean messageBean = new MessageBean();
-            messageBean.setLocation(MessageBean.LOCATION_RIGHT);
-            messageBean.setType(MessageBean.TYPE_IMAGE);
-            messageBean.setContent("file://" + fileUploadBean.getOriginalPath());
-            messageBean.setUserBean(SelfConstant.getUserBean());
-            messageBean.setSend_id(SelfConstant.getUserBean().getUser_id());
-            messageBean.setSendCode(fileUploadBean.getSendCode());
-            messageList.add(messageBean);
-        }
-        mChatMessageAdapter.addAll(messageList);
+    private MessageBean buildImage(String filepath) {
+        MessageBean messageBean = new MessageBean();
+        messageBean.setLocation(MessageBean.LOCATION_RIGHT);
+        messageBean.setType(MessageBean.TYPE_IMAGE);
+        messageBean.setContent("file://" + filepath);
+        messageBean.setUserBean(mUserBean);
+        messageBean.setSendId("111");
+        messageBean.setSendCode("222");
+        mChatMessageAdapter.add(messageBean);
         mLastPosition = mChatMessageAdapter.getItemCount();
         // 添加到mChatMessageAdapter中
         // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
         rv_message_list.smoothScrollToPosition(mLastPosition);
-        return messageList;
-    }*/
+        return messageBean;
+    }
+
     private void sendMsg(MessageBean messageBean) {
-        /*JSONObject jsonObject = new JSONObject();
-        String Url = messageBean.getContent();
-        String content;
-        String type = messageBean.getType();
-        if (messageBean.getCreate_time() == 0) {
-            messageBean.setCreate_time(new Date().getTime());
 
-        }
-
-        RecentContactBean recentContactBean = new RecentContactBean(messageBean);
-        recentContactBean.setUserBean(mReceiveUserBean);
-        GlobalApplication.addRecentContact(recentContactBean);
-
-
-        try {
-            if ((MessageBean.TYPE_AUDIO.equals(type) || MessageBean.TYPE_IMAGE.equals(type)) && "http".equals(Url.substring(0, 4))) {
-                content = new URL(Url).getPath();
-            } else {
-                content = Url;
+        GlobalApplication.getPtchat().getDataInteraction().sendData(messageBean, new SendCallback() {
+            @Override
+            public void success() {
+                logger.debug("success");
             }
-            jsonObject.put("receive_id", messageBean.getReceive_id());
-            jsonObject.put("type", messageBean.getType());
-            jsonObject.put("content", content);
-            jsonObject.put("sendCode", messageBean.getSendCode());
-            jsonObject.put("duration", messageBean.getDuration());
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        //mWs.postMsg(jsonObject);*/
+            @Override
+            public void error() {
+                logger.debug("error");
 
+            }
+        });
 
     }
 
-    private void sendMultiMsg(String content, String type, String sendCode) {
-        /*JSONObject jsonObject = new JSONObject();
-
-        try {
-            jsonObject.put("receive_id", mReceiveUserBean.getUser_id());
-            jsonObject.put("type", type);
-            jsonObject.put("content", content);
-            jsonObject.put("sendCode", sendCode);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }*/
-        //mWs.postMsg(jsonObject);
-    }
 
     private void startRecord(View view) {
 
@@ -907,30 +799,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         if (requestCode == HandlerCode.REQUEST_IMAGE && resultCode == RESULT_OK) {
             List<String> strings = Matisse.obtainPathResult(data);
-
-
-            List<MessageBean> messageList = new ArrayList<>();
-            for (String  uri : strings) {
-                MessageBean messageBean = new MessageBean();
-                messageBean.setLocation(MessageBean.LOCATION_RIGHT);
-                messageBean.setType(MessageBean.TYPE_IMAGE);
-                messageBean.setContent("file://" + uri);
-                messageBean.setUserBean(mUserBean);
-                messageBean.setSend_id("11111111");
-                messageBean.setSendCode("1111");
-                messageList.add(messageBean);
+            for (String filepath : strings) {
+                buildImage(filepath);
             }
-            mChatMessageAdapter.addAll(messageList);
-            mLastPosition = mChatMessageAdapter.getItemCount();
-            // 添加到mChatMessageAdapter中
-            // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
-            rv_message_list.smoothScrollToPosition(mLastPosition);
-
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
-            // URI uri = cameraPhotoFile.toURI();
-
-
-            System.out.println(cameraPhotoFile);
+            buildImage(cameraPhotoFile.getAbsolutePath());
 
         }
     }
