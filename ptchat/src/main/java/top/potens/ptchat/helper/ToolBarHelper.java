@@ -1,8 +1,12 @@
 package top.potens.ptchat.helper;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +80,7 @@ public class ToolBarHelper {
         /*获取主题中定义的悬浮标志*/
         boolean overly = typedArray.getBoolean(0, false);
         /*获取主题中定义的toolbar的高度*/
-        int toolBarSize = (int) typedArray.getDimension(1,(int) mContext.getResources().getDimension(R.dimen.abc_action_bar_default_height_material));
+        @SuppressLint("ResourceType") int toolBarSize = (int) typedArray.getDimension(1,(int) mContext.getResources().getDimension(R.dimen.abc_action_bar_default_height_material));
         typedArray.recycle();
         /*如果是悬浮状态，则不需要设置间距*/
         params.topMargin = overly ? 0 : toolBarSize;
