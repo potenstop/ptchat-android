@@ -150,6 +150,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_window);
+        GlobalApplication.mChatWindowActivity = this;
         mContext = this;
         ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar != null) supportActionBar.setDisplayHomeAsUpEnabled(false);  //不显示返回按钮
@@ -719,6 +720,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     }
 
 
+
     private MessageBean buildImage(String filepath) {
         MessageBean messageBean = new MessageBean();
         messageBean.setLocation(MessageBean.LOCATION_RIGHT);
@@ -791,6 +793,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         } else if (MessageBean.TYPE_IMAGE.equals(messageBean.getType())) {
 
         }
+    }
+    // 页面中插入一条消息
+    public void insertPageMessage(MessageBean messageBean) {
+        mChatMessageAdapter.add(messageBean);
+        mLastPosition = mChatMessageAdapter.getItemCount();
+        rv_message_list.smoothScrollToPosition(mLastPosition);
     }
 
     @Override

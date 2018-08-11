@@ -17,9 +17,10 @@ import top.potens.ptchat.network.SendCallback;
 
 public class MainActivity extends AppCompatActivity {
 
-    @OnClick(R.id.test) void submit() {
+    @OnClick(R.id.test)
+    void submit() {
         final UserBean userBean = new UserBean(1, "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "abc");
-        Ptchat ptchat = Ptchat.from(this)
+        final Ptchat ptchat = Ptchat.from(this)
                 .userInfo(userBean)
                 .dataStrategy(new DataInteraction() {
                     @Override
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
                         messageBean.setCreateTime(new Date().getTime());
 
                         messageBeans.add(messageBean);
-                        return  messageBeans;
+                        return messageBeans;
                     }
 
                     @Override
@@ -45,8 +46,33 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .forResult(1);
 
+        final UserBean otherBean = new UserBean(2, "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "cc");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
 
+                for (int i = 0; i < 40; i++) {
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    MessageBean messageBean = new MessageBean();
+                    messageBean.setLocation(MessageBean.LOCATION_LEFT);
+                    messageBean.setType(MessageBean.TYPE_TEXT);
+                    messageBean.setContent(i+"");
+                    messageBean.setUserBean(otherBean);
+                    messageBean.setSendId("11111");
+                    messageBean.setReceiveId("111");
+                    messageBean.setCreateTime(new Date().getTime());
+                    ptchat.addOtherMessage(messageBean);
+                }
+
+            }
+        }).start();
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

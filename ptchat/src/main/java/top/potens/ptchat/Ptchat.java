@@ -103,9 +103,12 @@ public class Ptchat {
         return this;
     }
 
-
-    public void addMessage(MessageBean messageBean) {
-
-
+    // 添加一条对方发来的消息
+    public boolean addOtherMessage(MessageBean messageBean) {
+        if (GlobalApplication.mChatWindowActivity!=null){
+            GlobalApplication.mChatWindowActivity.insertPageMessage(messageBean);
+            return true;
+        }
+        return false;
     }
 }

@@ -6,6 +6,8 @@ import android.content.Context;
 
 import java.lang.ref.WeakReference;
 
+import top.potens.ptchat.activity.ChatWindowActivity;
+
 
 /**
  * Created by Administrator on 2017/9/19.
@@ -16,6 +18,8 @@ import java.lang.ref.WeakReference;
 public class GlobalApplication extends Application {
     private static Context mContext;
     private static Ptchat mPtchat;
+    public static ChatWindowActivity mChatWindowActivity;
+
 
     public static Context getAppContext() {
         return mContext;
@@ -28,6 +32,7 @@ public class GlobalApplication extends Application {
         super.onCreate();
         // 获取Context
         mContext = getApplicationContext();
+
     }
 
     public static void setPtchat(Ptchat ptchat) {
