@@ -138,6 +138,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             String head = messageBean.getFriendUserBean().getUserHead();
             GlideApp.with(mContext)
                     .load(head)
+                    .configConcatHead()
                     .into(rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());
@@ -204,6 +205,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
             GlideApp.with(mContext)
                     .load(head)
+                    .configConcatHead()
                     .into(rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());

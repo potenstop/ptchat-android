@@ -21,8 +21,9 @@ public class ImageGlideExtension {
     /**
      * 联系人头像快速设置
      */
+    @GlideOption
     public static void configConcatHead(RequestOptions options) {
-        options.override(100, 100);
+        options.override(60, 60);
 
     }
 
@@ -32,7 +33,7 @@ public class ImageGlideExtension {
      * @param options   RequestOptions
      */
     @GlideOption
-    public static void miniThumb(RequestOptions options, int size) {
+    public static void miniThumb(RequestOptions options) {
         options.fitCenter().override(MINI_THUMB_SIZE);
     }
 }
