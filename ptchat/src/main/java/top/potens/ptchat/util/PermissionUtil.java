@@ -132,13 +132,13 @@ public class PermissionUtil {
     /**
      * 是否拒绝了再次申请权限的请求（点击了不再询问）
      */
-    public static boolean deniedRequestPermissonsAgain(@NonNull Activity activity, @NonNull String... permissions) {
+    public static boolean deniedRequestPermissionAgain(@NonNull Activity activity, @NonNull String... permissions) {
         if (!needCheckPermission()) {
             return false;
         }
         List<String> deniedPermissions = getDeniedPermissions(activity, permissions);
         for (String permission : deniedPermissions) {
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_DENIED) {
+            if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED) {
 
                 if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
                     //当用户之前已经请求过该权限并且拒绝了授权这个方法返回true
@@ -179,7 +179,7 @@ public class PermissionUtil {
         }
 
         if (!hasPermission(activity, permissions)) {
-            if (deniedRequestPermissonsAgain(activity, permissions)) {
+            if (deniedRequestPermissionAgain(activity, permissions)) {
                 startApplicationDetailsSettings(activity, requestCode);
                 //返回结果onActivityResult
             } else {
@@ -211,13 +211,11 @@ public class PermissionUtil {
             }
         }
 
-        if (null != callBack) {
-            if (!granted.isEmpty()) {
-                callBack.onPermissionsGranted(requestCode, granted, denied.isEmpty());
-            }
-            if (!denied.isEmpty()) {
-                callBack.onPermissionsDenied(requestCode, denied, granted.isEmpty());
-            }
+        if (!granted.isEmpty()) {
+            callBack.onPermissionsGranted(requestCode, granted, denied.isEmpty());
+        }
+        if (!denied.isEmpty()) {
+            callBack.onPermissionsDenied(requestCode, denied, granted.isEmpty());
         }
 
 
@@ -231,12 +229,16 @@ public class PermissionUtil {
     public interface OnRequestPermissionsResultCallbacks {
 
         /**
-         * @param isAllGranted 是否全部同意
+         * @param requestCode       申请码
+         * @param perms             同意的权限列表
+         * @param isAllGranted      是否全部同意
          */
         void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted);
 
         /**
-         * @param isAllDenied 是否全部拒绝
+         * @param requestCode       申请码
+         * @param perms             拒绝的权限列表
+         * @param isAllDenied       是否全部拒绝
          */
         void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied);
 
