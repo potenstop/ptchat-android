@@ -1,6 +1,5 @@
 package top.potens.ptchat.activity;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
@@ -80,7 +80,7 @@ import top.potens.ptchat.R;
  */
 
 public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEditorActionListener, View.OnClickListener,
-        MultiLineEditText.OnBackspacePressListener, ChatMessageAdapter.OnMessageItemClickListener {
+        MultiLineEditText.OnBackspacePressListener, ChatMessageAdapter.OnMessageItemClickListener , PermissionUtil.OnRequestPermissionsResultCallbacks{
     private static final Logger logger = LoggerFactory.getLogger(ChatWindowActivity.class);
 
     private Context mContext;
@@ -113,6 +113,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private final ActivityHandler mHandler = new ActivityHandler(this);
 
     private File cameraPhotoFile;
+
+    private static byte PERMISSION_AUDIO_CODE = 0x01;
+    private static byte PERMISSION_IMAGE_CODE = 0x02;
+    private static byte PERMISSION_CAMERA_CODE = 0x03;
     /**
      * 耗时操作
      */
@@ -588,7 +592,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     public void onClick(View view) {
         int i = view.getId();
         if (i == R.id.ib_voice) {
-            PermissionUtil.rxRequestPermission(this, new String[]{
+            /*PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, new PermissionUtil.PermissionCallback() {
@@ -596,24 +600,27 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 public void succeed() {
                     ChatWindowActivity.this.openVoice();
                 }
-            });
+            });*/
+            PermissionUtil.getAudioPermissions(this, PERMISSION_AUDIO_CODE);
         } else if (i == R.id.ib_image) {
-            PermissionUtil.rxRequestPermission(this, new String[]{
+            /*PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionUtil.PermissionCallback() {
                 @Override
                 public void succeed() {
                     ChatWindowActivity.this.openImage();
                 }
-            });
+            });*/
+            PermissionUtil.getExternalStoragePermissions(this, PERMISSION_IMAGE_CODE);
         } else if (i == R.id.ib_camera) {
-            PermissionUtil.rxRequestPermission(this, new String[]{
+            /*PermissionUtil.rxRequestPermission(this, new String[]{
                     Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionUtil.PermissionCallback() {
                 @Override
                 public void succeed() {
                     ChatWindowActivity.this.openCamera();
                 }
-            });
+            });*/
+            PermissionUtil.getExternalStoragePermissions(this, PERMISSION_CAMERA_CODE);
         } else if (i == R.id.ib_face) {
             if (face_container.getVisibility() == View.GONE) {
                 face_container.setVisibility(View.VISIBLE);
@@ -801,6 +808,26 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         rv_message_list.smoothScrollToPosition(mLastPosition);
     }
 
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted) {
+        logger.debug("同意:" + perms.size() + "个权限,isAllGranted=" + isAllGranted);
+        for (String perm : perms) {
+            logger.debug("同意:" + perm);
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied) {
+        logger.debug("不同意:" + perms.size() + "个权限,isAllGranted=" + isAllDenied);
+        for (String perm : perms) {
+            logger.debug("不同意:" + perm);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionUtil.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
