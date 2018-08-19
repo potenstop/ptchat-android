@@ -151,11 +151,12 @@ public class PermissionUtil {
     }
 
     /**
-     * 打开app详细设置界面<br/>
-     * <p>
-     * 在 onActivityResult() 中没有必要对 resultCode 进行判断，因为用户只能通过返回键才能回到我们的 App 中，<br/>
-     * 所以 resultCode 总是为 RESULT_CANCEL，所以不能根据返回码进行判断。<br/>
-     * 在 onActivityResult() 中还需要对权限进行判断，因为用户有可能没有授权就返回了！<br/>
+     * 打开app详细设置界面
+     * 在 onActivityResult() 中没有必要对 resultCode 进行判断，因为用户只能通过返回键才能回到我们的 App 中
+     * 所以 resultCode 总是为 RESULT_CANCEL，所以不能根据返回码进行判断。
+     * 在 onActivityResult() 中还需要对权限进行判断，因为用户有可能没有授权就返回了！
+     * @param activity          activity对象
+     * @param requestCode       请求码
      */
     public static void startApplicationDetailsSettings(@NonNull Activity activity, int requestCode) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -167,9 +168,11 @@ public class PermissionUtil {
     }
 
     /**
-     * 申请权限<br/>
+     * 申请权限
      * 使用onRequestPermissionsResult方法，实现回调结果或者自己普通处理
-     *
+     * @param activity      activity对象
+     * @param requestCode   请求码
+     * @param permissions   授权的权限
      * @return 是否已经获取权限
      */
     public static boolean requestPermission(Activity activity, int requestCode, String... permissions) {

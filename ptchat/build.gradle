@@ -4,7 +4,7 @@ publish {
     userOrg = 'ptchat' //bintray账户下某个组织id
     groupId = 'top.potens.ptchat' //maven仓库下库的包名，一般为模块包名
     artifactId = 'ptchat-android' //项目名称
-    publishVersion = '1.0.1' //版本号
+    publishVersion = '1.0.2' //版本号
     desc = 'ptchat for android' //项目介绍
     website = '' //项目主页
 }
@@ -17,7 +17,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
-        versionName "1.0.1"
+        versionName "1.0.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
