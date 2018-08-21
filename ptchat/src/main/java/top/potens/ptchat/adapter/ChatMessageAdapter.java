@@ -141,7 +141,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                     .configConcatHead()
                     .into(rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
-                SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());
+                SpannableStringBuilder sb = FaceHelper.imageToGif(mContext, tv_content, messageBean.getContent());
 
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.GONE);
@@ -208,7 +208,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                     .configConcatHead()
                     .into(rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
-                SpannableStringBuilder sb = FaceHelper.imageToGif(tv_content, messageBean.getContent());
+                SpannableStringBuilder sb = FaceHelper.imageToGif(mContext, tv_content, messageBean.getContent());
 
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.GONE);

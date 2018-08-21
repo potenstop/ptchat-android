@@ -13,11 +13,11 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import top.potens.ptchat.GlobalApplication;
 import top.potens.ptchat.gif.AnimatedGifDrawable;
 import top.potens.ptchat.gif.AnimatedImageSpan;
 
@@ -35,9 +35,6 @@ public class FaceHelper {
     private int columns;
     private int rows;
 
-    static {
-        initStaticFaces();
-    }
 
     public FaceHelper(int columns) {
 
@@ -53,18 +50,16 @@ public class FaceHelper {
     /**
      * 获取表情转文字后的内容
      *
-     * @param path 表情图片路径
-     * @return
+     * @param context   context
+     * @param path      表情图片路径
+     * @return          SpannableStringBuilder
      */
-    public SpannableStringBuilder getFace(String path) {
-        Context context = GlobalApplication.getAppContext();
+    public SpannableStringBuilder getFace(Context context, String path) {
         SpannableStringBuilder sb = new SpannableStringBuilder();
         try {
-            /**
-             * 经过测试，虽然这里tempText被替换为png显示，但是但我单击发送按钮时，获取到輸入框的内容是tempText的值而不是png
-             * 所以这里对这个tempText值做特殊处理
-             * 格式：#[face/png/f_static_000.png]#，以方便判斷當前圖片是哪一個
-             * */
+            //经过测试，虽然这里tempText被替换为png显示，但是但我单击发送按钮时，获取到輸入框的内容是tempText的值而不是png
+            // 所以这里对这个tempText值做特殊处理
+            // 格式：#[face/png/f_static_000.png]#，以方便判斷當前圖片是哪一個
             String tempText = "#[" + path + "]#";
             sb.append(tempText);
             sb.setSpan(
@@ -84,16 +79,13 @@ public class FaceHelper {
     /**
      * 初始化表情列表staticFacesList
      */
-    private static void initStaticFaces() {
-        Context content = GlobalApplication.getAppContext();
+    public static void initStaticFaces(Context context) {
 
         try {
             staticFacesList = new ArrayList<String>();
-            String[] faces = content.getAssets().list("face/png");
+            String[] faces = context.getAssets().list("face/png");
             //将Assets中的表情名称转为字符串一一添加进staticFacesList
-            for (int i = 0; i < faces.length; i++) {
-                staticFacesList.add(faces[i]);
-            }
+            staticFacesList.addAll(Arrays.asList(faces));
             //去掉删除图片
             staticFacesList.remove("emotion_del_normal.png");
         } catch (Exception e) {
@@ -155,8 +147,8 @@ public class FaceHelper {
     /**
      * 获取每页的表情文名称
      *
-     * @param page 页码
-     * @return
+     * @param page      页码
+     * @return          表情代码列表
      */
     public List<String> pagePath(int page) {
 
@@ -177,9 +169,12 @@ public class FaceHelper {
 
     /**
      * 向指定Editable控件添加表情
+     * @param context       context对象
+     * @param editable      editable对象
+     * @param text          文本
      */
-    public void insertFace(Editable editable, String text) {
-        SpannableStringBuilder face = getFace(text);
+    public void insertFace(Context context, Editable editable, String text) {
+        SpannableStringBuilder face = getFace(context, text);
 
         int iCursorStart = Selection.getSelectionStart(editable);
         int iCursorEnd = Selection.getSelectionEnd(editable);
@@ -198,8 +193,7 @@ public class FaceHelper {
     }
 
     // 把对应的图片显示为gif图
-    public static SpannableStringBuilder imageToGif(final TextView gifTextView, String content) {
-        Context mContext = GlobalApplication.getAppContext();
+    public static SpannableStringBuilder imageToGif(Context context, final TextView gifTextView, String content) {
         SpannableStringBuilder sb = new SpannableStringBuilder(content);
         Pattern p = Pattern.compile(smallRegex);
         Matcher m = p.matcher(content);
@@ -208,11 +202,9 @@ public class FaceHelper {
             try {
                 String num = tempText.substring("#[face/png/f_static_".length(), tempText.length() - ".png]#".length());
                 String gif = "face/gif/f" + num + ".gif";
-                /**
-                 * 如果open这里不抛异常说明存在gif，则显示对应的gif
-                 * 否则说明gif找不到，则显示png
-                 * */
-                InputStream is = mContext.getAssets().open(gif);
+                 // 如果open这里不抛异常说明存在gif，则显示对应的gif
+                 // 否则说明gif找不到，则显示png
+                InputStream is = context.getAssets().open(gif);
                 sb.setSpan(new AnimatedImageSpan(new AnimatedGifDrawable(is, new AnimatedGifDrawable.UpdateListener() {
                             @Override
                             public void update() {
@@ -224,7 +216,7 @@ public class FaceHelper {
             } catch (Exception e) {
                 String png = tempText.substring("#[".length(), tempText.length() - "]#".length());
                 try {
-                    sb.setSpan(new ImageSpan(mContext, BitmapFactory.decodeStream(mContext.getAssets().open(png))), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    sb.setSpan(new ImageSpan(context, BitmapFactory.decodeStream(context.getAssets().open(png))), m.start(), m.end(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     //e1.printStackTrace();

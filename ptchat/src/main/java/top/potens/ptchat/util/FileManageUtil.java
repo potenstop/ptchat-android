@@ -1,11 +1,11 @@
 package top.potens.ptchat.util;
 
+import android.content.Context;
 import android.os.Environment;
 
 
 import java.io.File;
 
-import top.potens.ptchat.GlobalApplication;
 
 
 /**
@@ -30,12 +30,12 @@ public class FileManageUtil {
     /**
      * 获取项目根路径
      */
-    public static String getProjectPath() {
+    public static String getProjectPath(Context context) {
         if (projectPath==null) {
             if (hasSdcard()) {
                 projectPath = Environment.getExternalStorageDirectory()+"/ptchat";
             } else {
-                projectPath = GlobalApplication.getAppContext().getFilesDir().getPath();
+                projectPath = context.getFilesDir().getPath();
 
             }
             createPath(projectPath);
@@ -43,9 +43,9 @@ public class FileManageUtil {
         return projectPath;
     }
 
-    public static String getAudioPath() {
+    public static String getAudioPath(Context context) {
         if (audioPath==null){
-            audioPath = getProjectPath()+"/audio/";
+            audioPath = getProjectPath(context)+"/audio/";
             createPath(audioPath);
         }
         return audioPath;

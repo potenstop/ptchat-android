@@ -52,7 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import top.potens.ptchat.GlobalApplication;
+import top.potens.ptchat.GlobalStaticVariable;
 import top.potens.ptchat.adapter.ChatMessageAdapter;
 import top.potens.ptchat.adapter.FaceVPAdapter;
 import top.potens.ptchat.adapter.SmallFaceAdapter;
@@ -154,7 +154,9 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_window);
-        GlobalApplication.mChatWindowActivity = this;
+        // 初始化表情列表
+        FaceHelper.initStaticFaces(this);
+        GlobalStaticVariable.setChatWindowActivity(this);
         mContext = this;
         ActionBar supportActionBar = getSupportActionBar();
         if (supportActionBar != null) supportActionBar.setDisplayHomeAsUpEnabled(false);  //不显示返回按钮
@@ -297,7 +299,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // 获取表格chart_face_gv中点击所属的LinearLayout(face_vertical)下的第二个节点的text
                 String png = ((TextView) ((LinearLayout) view).getChildAt(1)).getText().toString();
-                mFaceHelper.insertFace(et_message.getText(), png);
+                mFaceHelper.insertFace(mContext, et_message.getText(), png);
             }
         });
         return gridview;
@@ -329,7 +331,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
      * 初始化录音弹出窗口
      */
     private void initDialog() {
-        final String audioPath = FileManageUtil.getAudioPath() + "audio.amr";
+        final String audioPath = FileManageUtil.getAudioPath(this) + "audio.amr";
         View view = View.inflate(this, R.layout.record_dialog, null);
         mRecordDialog = new Dialog(this, R.style.DialogStyle);
         mRecordDialog.setContentView(view);
@@ -447,7 +449,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         String text = et_message.getText().toString().trim();
 
         if (TextUtils.isEmpty(text)) {
-            ToastUtil.showShortToast("文本内容不能为空");
+            ToastUtil.showShortToast(mContext,"文本内容不能为空");
             return;
         }
         MessageBean messageBean = new MessageBean();
@@ -731,7 +733,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     private void sendMsg(MessageBean messageBean) {
 
-        GlobalApplication.getPtchat().getDataInteraction().sendData(messageBean, new SendCallback() {
+        GlobalStaticVariable.getPtchat().getDataInteraction().sendData(messageBean, new SendCallback() {
             @Override
             public void success() {
                 logger.debug("success");
