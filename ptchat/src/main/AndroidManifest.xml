@@ -1,12 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="top.potens.ptchat">
 
-    <application
-        android:name=".GlobalApplication"
-        android:allowBackup="true"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
+    <application>
         <activity
             android:name=".activity.ChatWindowActivity"
             android:theme="@style/IndexTheme"
