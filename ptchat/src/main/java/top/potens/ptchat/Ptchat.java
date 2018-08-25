@@ -58,8 +58,9 @@ public class Ptchat {
 
     /**
      * 当前用户的user信息
-     * @param userBean      userBean
-     * @return              Ptchat
+     *
+     * @param userBean userBean
+     * @return Ptchat
      */
     public Ptchat userInfo(UserBean userBean) {
         this.userBean = userBean;
@@ -68,8 +69,9 @@ public class Ptchat {
 
     /**
      * 配置数据交互
-     * @param dataInteraction       DataInteraction
-     * @return                      Ptchat
+     *
+     * @param dataInteraction DataInteraction
+     * @return Ptchat
      */
     public Ptchat dataStrategy(DataInteraction dataInteraction) {
         this.mDataInteraction = dataInteraction;
@@ -82,7 +84,8 @@ public class Ptchat {
 
     /**
      * 跳转至chat页面
-     * @param requestCode   请求码
+     *
+     * @param requestCode 请求码
      */
     public Ptchat forResult(int requestCode) {
         Activity activity = mActivity.get();
@@ -90,7 +93,7 @@ public class Ptchat {
             return this;
         }
         Intent intent = new Intent(activity, ChatWindowActivity.class);
-        Bundle bundle=new Bundle();
+        Bundle bundle = new Bundle();
         bundle.putSerializable("userInfo", userBean);
         intent.putExtras(bundle);
         Fragment fragment = mFragment.get();
@@ -99,14 +102,14 @@ public class Ptchat {
         } else {
             activity.startActivityForResult(intent, requestCode);
         }
-        GlobalApplication.setPtchat(this);
+        GlobalStaticVariable.setPtchat(this);
         return this;
     }
 
     // 添加一条对方发来的消息
     public boolean addOtherMessage(MessageBean messageBean) {
-        if (GlobalApplication.mChatWindowActivity!=null){
-            GlobalApplication.mChatWindowActivity.insertPageMessage(messageBean);
+        if (GlobalStaticVariable.getChatWindowActivity() != null) {
+            GlobalStaticVariable.getChatWindowActivity().insertPageMessage(messageBean);
             return true;
         }
         return false;
