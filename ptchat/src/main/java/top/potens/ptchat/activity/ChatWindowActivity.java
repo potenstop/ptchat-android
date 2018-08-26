@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,11 +34,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
+import com.zhihu.matisse.engine.ImageEngine;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
 import org.slf4j.Logger;
@@ -52,20 +55,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
+import pub.devrel.easypermissions.AppSettingsDialog;
+import pub.devrel.easypermissions.EasyPermissions;
 import top.potens.ptchat.GlobalStaticVariable;
 import top.potens.ptchat.adapter.ChatMessageAdapter;
 import top.potens.ptchat.adapter.FaceVPAdapter;
 import top.potens.ptchat.adapter.SmallFaceAdapter;
 import top.potens.ptchat.bean.MessageBean;
+import top.potens.ptchat.bean.PermissionInfoBean;
 import top.potens.ptchat.bean.UserBean;
 import top.potens.ptchat.constant.HandlerCode;
-import top.potens.ptchat.engine.Glide4Engine;
+import top.potens.ptchat.constant.PermissionConstant;
+import top.potens.ptchat.engine.MatisseImageEngine;
 import top.potens.ptchat.helper.FaceHelper;
 import top.potens.ptchat.network.SendCallback;
 import top.potens.ptchat.util.AudioRecordUtil;
 import top.potens.ptchat.util.DisplayUtil;
 import top.potens.ptchat.util.FileManageUtil;
-import top.potens.ptchat.util.PermissionUtil;
 import top.potens.ptchat.util.ToastUtil;
 import top.potens.ptchat.view.CirclePlayProgress;
 import top.potens.ptchat.view.KeyboardRelativeLayout;
@@ -78,9 +85,8 @@ import top.potens.ptchat.R;
  * Created by wenshao on 2017/4/5.
  * 聊天页面
  */
-
 public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEditorActionListener, View.OnClickListener,
-        MultiLineEditText.OnBackspacePressListener, ChatMessageAdapter.OnMessageItemClickListener, PermissionUtil.OnRequestPermissionsResultCallbacks {
+        MultiLineEditText.OnBackspacePressListener, ChatMessageAdapter.OnMessageItemClickListener, EasyPermissions.PermissionCallbacks {
     private static final Logger logger = LoggerFactory.getLogger(ChatWindowActivity.class);
 
     private Context mContext;
@@ -97,6 +103,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private LinearLayout record_container;
     private Dialog mRecordDialog;
     private CirclePlayProgress cpp_record_play;
+    private Button message_send;
 
     private List<View> faceViews = new ArrayList<View>();
     private ViewPager mViewPager;
@@ -114,9 +121,11 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     private File cameraPhotoFile;
 
-    private final static byte PERMISSION_AUDIO_CODE = 0x01;
-    private final static int PERMISSION_IMAGE_CODE = 0x02;
-    private final static int PERMISSION_CAMERA_CODE = 0x03;
+    private final static PermissionInfoBean permissionAudio = PermissionConstant.getAudioPermissions(0x001);
+    private final static PermissionInfoBean permissionImage = PermissionConstant.getExternalStoragePermissions(0x002);
+    private final static PermissionInfoBean permissionCamera = PermissionConstant.getCameraPermissions(0x003);
+
+
     /**
      * 耗时操作
      */
@@ -126,6 +135,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         }
     };
+
+
 
     /**
      * 更新ui
@@ -187,7 +198,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         ImageButton ib_emo = findViewById(R.id.ib_face);
         ImageButton ib_more = findViewById(R.id.ib_more);
         ImageButton ib_calculator = findViewById(R.id.ib_calculator);
-        Button message_send = findViewById(R.id.message_send);
+        message_send = findViewById(R.id.message_send);
 
 
         ib_voice.setOnClickListener(this);
@@ -449,7 +460,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         String text = et_message.getText().toString().trim();
 
         if (TextUtils.isEmpty(text)) {
-            ToastUtil.showShortToast(mContext,"文本内容不能为空");
+            ToastUtil.showShortToast(mContext, "文本内容不能为空");
             return;
         }
         MessageBean messageBean = new MessageBean();
@@ -556,9 +567,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            View v = getCurrentFocus();
-            if (!isEditText(v, ev)) {
-                hideKeyboard(v);
+            if (!isEditText(et_message, ev) && !isSendButton(message_send, ev)) {
+                hideKeyboard(et_message);
             }
             return super.dispatchTouchEvent(ev);
         }
@@ -577,7 +587,30 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private boolean isEditText(View v, MotionEvent event) {
         if (v != null && (v instanceof EditText)) {
             int[] leftTop = {0, 0};
-            //获取输入框当前的location位置
+            //获取输入框当前的location
+            v.getLocationInWindow(leftTop);
+            int left = leftTop[0];
+            int top = leftTop[1];
+            int bottom = top + v.getHeight();
+            int right = left + v.getWidth();
+            // 点击的是输入框区域，保留点击EditText的事件
+            return event.getX() > left && event.getX() < right
+                    && event.getY() > top && event.getY() < bottom;
+        }
+        return false;
+    }
+
+    /**
+     * 判断当前点击是否为发送按钮
+     *
+     * @param v     点击的控件
+     * @param event 点击事件
+     * @return true:点击的为输入框 false其他控件
+     */
+    private boolean isSendButton(View v, MotionEvent event) {
+        if (v != null && (v instanceof Button)) {
+            int[] leftTop = {0, 0};
+            //获取当前发送按钮的location
             v.getLocationInWindow(leftTop);
             int left = leftTop[0];
             int top = leftTop[1];
@@ -593,21 +626,30 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public void onClick(View view) {
         int i = view.getId();
+
         if (i == R.id.ib_voice) {
-            boolean isPermission = PermissionUtil.getAudioPermissions(this, PERMISSION_AUDIO_CODE);
-            if (isPermission) {
+            if (EasyPermissions.hasPermissions(mContext, permissionAudio.getPermissions())) {
                 this.openVoice();
+            } else {
+                EasyPermissions.requestPermissions(this, "录音需要录音权限",
+                        permissionAudio.getCode(), permissionAudio.getPermissions());
             }
 
+
         } else if (i == R.id.ib_image) {
-            boolean isPermission = PermissionUtil.getExternalStoragePermissions(this, PERMISSION_IMAGE_CODE);
-            if (isPermission) {
-                this.openImage();
+            if (EasyPermissions.hasPermissions(mContext, permissionImage.getPermissions())) {
+                this.openVoice();
+            } else {
+                EasyPermissions.requestPermissions(this, "相册需要文件读取权限",
+                        permissionAudio.getCode(), permissionImage.getPermissions());
             }
+
         } else if (i == R.id.ib_camera) {
-            boolean isPermission = PermissionUtil.getExternalStoragePermissions(this, PERMISSION_CAMERA_CODE);
-            if (isPermission) {
-                this.openCamera();
+            if (EasyPermissions.hasPermissions(mContext, permissionCamera.getPermissions())) {
+                this.openVoice();
+            } else {
+                EasyPermissions.requestPermissions(this, "相机需要文件读取权限",
+                        permissionAudio.getCode(), permissionCamera.getPermissions());
             }
         } else if (i == R.id.ib_face) {
             if (face_container.getVisibility() == View.GONE) {
@@ -650,6 +692,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     }
 
     private void openImage() {
+        final MatisseImageEngine matisseImageEngine = GlobalStaticVariable.getPtchat().getMatisseImageEngine();
         Matisse.from(this)
                 .choose(MimeType.ofAll(), false)    // //照片视频全部显示
                 .countable(true)    // 有序图片
@@ -659,7 +702,35 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 //.gridExpectedSize(120)   // 图片显示表格的大小
                 .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)   //图像选择和预览活动所需的方向。
                 .thumbnailScale(0.85f)  // 缩放比例
-                .imageEngine(new Glide4Engine())    // 图片加载引擎
+                .imageEngine(new ImageEngine() {
+                    @Override
+                    public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
+                        matisseImageEngine.loadThumbnail(context, resize, placeholder, imageView, uri);
+                    }
+
+                    @Override
+                    public void loadGifThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
+                        matisseImageEngine.loadGifThumbnail(context, resize, placeholder, imageView, uri);
+
+                    }
+
+                    @Override
+                    public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+                        matisseImageEngine.loadImage(context, resizeX, resizeY, imageView, uri);
+
+                    }
+
+                    @Override
+                    public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+                        matisseImageEngine.loadGifImage(context, resizeX, resizeY, imageView, uri);
+
+                    }
+
+                    @Override
+                    public boolean supportAnimatedGif() {
+                        return matisseImageEngine.supportAnimatedGif();
+                    }
+                })    // 图片加载引擎
                 .forResult(HandlerCode.REQUEST_IMAGE);  //请求码
     }
 
@@ -795,39 +866,53 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         mLastPosition = mChatMessageAdapter.getItemCount();
         rv_message_list.smoothScrollToPosition(mLastPosition);
     }
-
-    // 有权限通过时调用的方法
     @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted) {
-        if (isAllGranted) {
-            switch (requestCode) {
-                case PERMISSION_AUDIO_CODE:
-                    this.openVoice();
-                    break;
-                case PERMISSION_CAMERA_CODE:
-                    this.openCamera();
-                    break;
-                case PERMISSION_IMAGE_CODE:
-                    this.openImage();
-                    break;
-                default:
-                    logger.warn("onPermissionsGranted requestCode=" + requestCode +" not case");
-
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if (requestCode == permissionAudio.getCode()) {
+            if (perms.size() == permissionAudio.getMember()) {
+                this.openVoice();
+            } else {
+                logger.warn("permission permissionAudio:只授权了"+perms.toString());
             }
+        } else if (requestCode == permissionImage.getCode()) {
+            if (perms.size() == permissionImage.getMember()) {
+                this.openImage();
+            } else {
+                logger.warn("permission permissionImage:只授权了"+perms.toString());
+            }
+        } else if (requestCode == permissionCamera.getCode()) {
+            if (perms.size() == permissionCamera.getMember()) {
+                this.openCamera();
+            } else {
+                logger.warn("permission permissionCamera:只授权了"+perms.toString());
+            }
+        }
+
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            //new AppSettingsDialog.Builder(this).build().show();
+            new AppSettingsDialog.Builder(this)
+                    .setTitle("必须的权限")
+                    .setPositiveButton("去设置")
+                    .setNegativeButton("取消")
+                    .setRationale("需要对" + PermissionConstant.getDescribes(perms) + "，进行授权！")
+                    .setRequestCode(1)
+                    .build()
+                    .show();
+
         }
     }
 
-    // 有权限不通过时调用的方法
-    @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied) {
-        logger.debug("onPermissionsDenied: isAllGranted=" + isAllDenied + ", perms=" + perms.toString());
-    }
 
     // 通知PermissionUtil 调用onPermissionsDenied或者onPermissionsGranted
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        PermissionUtil.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+        //PermissionConstant.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     @Override

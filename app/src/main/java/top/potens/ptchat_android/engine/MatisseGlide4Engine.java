@@ -1,4 +1,4 @@
-package top.potens.ptchat.engine;
+package top.potens.ptchat_android.engine;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -8,14 +8,15 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.request.RequestOptions;
-import com.zhihu.matisse.engine.ImageEngine;
+
+import top.potens.ptchat.engine.MatisseImageEngine;
 
 /**
  * Created by wenshao on 2018/7/20.
  * 图片加载
  */
 
-public class Glide4Engine implements ImageEngine {
+public class MatisseGlide4Engine implements MatisseImageEngine {
 
     @Override
     public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {

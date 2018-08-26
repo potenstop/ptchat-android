@@ -10,21 +10,21 @@ import java.io.Serializable;
 public class UserBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int userId;
+    private String userId;
     private String userHead;
     private String userName;
 
-    public UserBean(int userId, String userHead, String userName) {
+    public UserBean(String userId, String userHead, String userName) {
         this.userId = userId;
         this.userHead = userHead;
         this.userName = userName;
 
     }
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

@@ -35,7 +35,7 @@ public class KeyboardRelativeLayout extends RelativeLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (listener != null) {
-            listener.onSizeChanged(w, h, oldw, oldh);
+             listener.onSizeChanged(w, h, oldw, oldh);
         }
     }
 

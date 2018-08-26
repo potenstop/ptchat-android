@@ -1,4 +1,4 @@
-package top.potens.ptchat.image;
+package top.potens.ptchat_android.image;
 
 import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.module.AppGlideModule;

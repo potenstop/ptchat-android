@@ -14,14 +14,18 @@ import top.potens.ptchat.bean.MessageBean;
 import top.potens.ptchat.bean.UserBean;
 import top.potens.ptchat.network.DataInteraction;
 import top.potens.ptchat.network.SendCallback;
+import top.potens.ptchat_android.engine.ChatGlide4Engine;
+import top.potens.ptchat_android.engine.MatisseGlide4Engine;
 
 public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.test)
     void submit() {
-        final UserBean userBean = new UserBean(1, "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "abc");
+        final UserBean userBean = new UserBean("1", "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "abc");
         final Ptchat ptchat = Ptchat.from(this)
                 .userInfo(userBean)
+                .matisseImageEngine(new MatisseGlide4Engine())
+                .chatImageEngine(new ChatGlide4Engine())
                 .dataStrategy(new DataInteraction() {
                     @Override
                     public List<MessageBean> initData() {
@@ -46,12 +50,12 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .forResult(1);
 
-        final UserBean otherBean = new UserBean(2, "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "cc");
+        final UserBean otherBean = new UserBean("2", "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "cc");
         new Thread(new Runnable() {
             @Override
             public void run() {
 
-                for (int i = 0; i < 40; i++) {
+                for (int i = 0; i < 5; i++) {
 
                     try {
                         Thread.sleep(1000);

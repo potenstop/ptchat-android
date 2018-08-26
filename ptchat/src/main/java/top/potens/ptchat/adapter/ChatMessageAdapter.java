@@ -15,10 +15,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import top.potens.ptchat.GlobalStaticVariable;
 import top.potens.ptchat.R;
 import top.potens.ptchat.bean.MessageBean;
+import top.potens.ptchat.engine.ChatImageEngine;
 import top.potens.ptchat.helper.FaceHelper;
-import top.potens.ptchat.image.GlideApp;
 import top.potens.ptchat.view.VoicePlayingView;
 
 
@@ -33,9 +34,11 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     private OnMessageItemClickListener mOnMessageItemClickListener;
     private Context mContext;
     private final static String fileRegex = "^file://.*";
+    private ChatImageEngine mChatImageEngine = GlobalStaticVariable.getPtchat().getChatImageEngine();
 
 
     public ChatMessageAdapter(Context context) {
+
         this.mContext=context;
         soundDrawable = ContextCompat.getDrawable(context, R.mipmap.ic_action_sound);
         soundDrawable.setBounds(0,0,soundDrawable.getMinimumWidth(),soundDrawable.getMinimumHeight());
@@ -136,10 +139,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         void setData(MessageBean messageBean) {
             super.setData(messageBean);
             String head = messageBean.getFriendUserBean().getUserHead();
-            GlideApp.with(mContext)
-                    .load(head)
-                    .configConcatHead()
-                    .into(rw_head);
+
+            mChatImageEngine.loadHead(mContext, head, rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(mContext, tv_content, messageBean.getContent());
 
@@ -152,9 +153,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 vpv_audio.setVisibility(View.GONE);
 
                 rw_content.setVisibility(View.VISIBLE);
-                GlideApp.with(mContext)
-                        .load(messageBean.getContent())
-                        .into(rw_content);
+                mChatImageEngine.loadImage(mContext, messageBean.getContent(), rw_content);
             } else if (messageBean.getType().equals(MessageBean.TYPE_AUDIO)) {
                 tv_content.setVisibility(View.GONE);
                 rw_content.setVisibility(View.GONE);
@@ -202,11 +201,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         void setData(MessageBean messageBean) {
             super.setData(messageBean);
             String head = messageBean.getFriendUserBean().getUserHead();
-
-            GlideApp.with(mContext)
-                    .load(head)
-                    .configConcatHead()
-                    .into(rw_head);
+            mChatImageEngine.loadHead(mContext, head, rw_head);
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(mContext, tv_content, messageBean.getContent());
 
@@ -218,9 +213,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 tv_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.GONE);
                 rw_content.setVisibility(View.VISIBLE);
-                GlideApp.with(mContext)
-                        .load(messageBean.getContent())
-                        .into(rw_content);
+                mChatImageEngine.loadImage(mContext, messageBean.getContent(), rw_content);
             } else if (messageBean.getType().equals(MessageBean.TYPE_AUDIO)){
                 tv_content.setVisibility(View.GONE);
                 rw_content.setVisibility(View.GONE);

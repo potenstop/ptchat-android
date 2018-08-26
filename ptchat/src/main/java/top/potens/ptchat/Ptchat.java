@@ -10,6 +10,8 @@ import java.lang.ref.WeakReference;
 import top.potens.ptchat.activity.ChatWindowActivity;
 import top.potens.ptchat.bean.MessageBean;
 import top.potens.ptchat.bean.UserBean;
+import top.potens.ptchat.engine.ChatImageEngine;
+import top.potens.ptchat.engine.MatisseImageEngine;
 import top.potens.ptchat.network.DataInteraction;
 
 /**
@@ -21,7 +23,8 @@ public class Ptchat {
     private final WeakReference<Fragment> mFragment;
     private UserBean userBean;
     private DataInteraction mDataInteraction;
-
+    private MatisseImageEngine mMatisseImageEngine;
+    private ChatImageEngine mChatImageEngine;
 
     private Ptchat(Activity activity) {
         this(activity, null);
@@ -76,6 +79,33 @@ public class Ptchat {
     public Ptchat dataStrategy(DataInteraction dataInteraction) {
         this.mDataInteraction = dataInteraction;
         return this;
+    }
+
+    /**
+     * 配置相册图片渲染
+     * @param matisseImageEngine MatisseImageEngine
+     * @return Ptchat
+     */
+    public Ptchat matisseImageEngine(MatisseImageEngine matisseImageEngine) {
+        this.mMatisseImageEngine = matisseImageEngine;
+        return this;
+    }
+
+    /**
+     * 配置chat页面的图片渲染
+     * @param chatImageEngine       ChatImageEngine
+     * @return                      Ptchat
+     */
+    public Ptchat chatImageEngine(ChatImageEngine chatImageEngine) {
+        this.mChatImageEngine = chatImageEngine;
+        return this;
+    }
+
+    public MatisseImageEngine getMatisseImageEngine() {
+        return mMatisseImageEngine;
+    }
+    public ChatImageEngine getChatImageEngine() {
+        return mChatImageEngine;
     }
 
     public DataInteraction getDataInteraction() {
