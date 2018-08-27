@@ -73,6 +73,7 @@ import top.potens.ptchat.network.SendCallback;
 import top.potens.ptchat.util.AudioRecordUtil;
 import top.potens.ptchat.util.DisplayUtil;
 import top.potens.ptchat.util.FileManageUtil;
+import top.potens.ptchat.util.RecyclerViewScroll;
 import top.potens.ptchat.util.ToastUtil;
 import top.potens.ptchat.view.CirclePlayProgress;
 import top.potens.ptchat.view.KeyboardRelativeLayout;
@@ -120,6 +121,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private final ActivityHandler mHandler = new ActivityHandler(this);
 
     private File cameraPhotoFile;
+    private RecyclerViewScroll recyclerViewScroll;
 
     private final static PermissionInfoBean permissionAudio = PermissionConstant.getAudioPermissions(0x001);
     private final static PermissionInfoBean permissionImage = PermissionConstant.getExternalStoragePermissions(0x002);
@@ -236,23 +238,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         rv_message_list.setAdapter(mChatMessageAdapter);
         rv_message_list.setHasFixedSize(true);
 
+        recyclerViewScroll = new RecyclerViewScroll(rv_message_list, linearLayoutManager);
+
         mChatMessageAdapter.setOnItemClickListener(this);
 
-
-        //监听RecyclerView滚动状态
-        rv_message_list.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                setScrollLocation(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-            }
-
-        });
         KeyboardRelativeLayout rl_chat_main = findViewById(R.id.rl_chat_main);
         rl_chat_main.setOnSizeChangedListener(new KeyboardRelativeLayout.OnSizeChangedListener() {
             @Override
@@ -481,9 +470,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         sendMsg(messageBean);
         mChatMessageAdapter.add(messageBean);
         mLastPosition = mChatMessageAdapter.getItemCount();
-        // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
-        rv_message_list.smoothScrollToPosition(mLastPosition);
-
+        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), true);
     }
 
     @Override
@@ -528,6 +515,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     /**
      * 设置滚动的item位置
      */
+    @Deprecated
     private void setScrollLocation(RecyclerView recyclerView, int newState) {
         //当前状态为停止滑动状态SCROLL_STATE_IDLE时
         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
@@ -638,7 +626,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         } else if (i == R.id.ib_image) {
             if (EasyPermissions.hasPermissions(mContext, permissionImage.getPermissions())) {
-                this.openVoice();
+                this.openImage();
             } else {
                 EasyPermissions.requestPermissions(this, "相册需要文件读取权限",
                         permissionAudio.getCode(), permissionImage.getPermissions());
@@ -646,7 +634,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         } else if (i == R.id.ib_camera) {
             if (EasyPermissions.hasPermissions(mContext, permissionCamera.getPermissions())) {
-                this.openVoice();
+                this.openCamera();
             } else {
                 EasyPermissions.requestPermissions(this, "相机需要文件读取权限",
                         permissionAudio.getCode(), permissionCamera.getPermissions());
@@ -780,8 +768,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setReceiveId("11");
         messageBean.setCreateTime(new Date().getTime());
         mChatMessageAdapter.add(messageBean);
-        mLastPosition = mChatMessageAdapter.getItemCount();
-        rv_message_list.smoothScrollToPosition(mLastPosition);
+        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), true);
         return messageBean;
     }
 
@@ -795,10 +782,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setSendId("111");
         messageBean.setSendCode("222");
         mChatMessageAdapter.add(messageBean);
-        mLastPosition = mChatMessageAdapter.getItemCount();
-        // 添加到mChatMessageAdapter中
-        // 平滑的滚动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
-        rv_message_list.smoothScrollToPosition(mLastPosition);
         return messageBean;
     }
 
@@ -926,7 +909,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             }
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
             buildImage(cameraPhotoFile.getAbsolutePath());
-
         }
+        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), false);
     }
 }
