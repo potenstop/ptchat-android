@@ -252,10 +252,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 } else { // 键盘显示
                     isKeyboardShow = true;
 
-                    // 平滑滚动到指定的位置
-                    if (rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
-                        ((LinearLayoutManager) rv_message_list.getLayoutManager()).scrollToPositionWithOffset(chatListViewLastPosition, chatListViewLastOffset);
-                    }
+//                    // 平滑滚动到指定的位置
+//                    if (rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
+//                        // ((LinearLayoutManager) rv_message_list.getLayoutManager()).scrollToPositionWithOffset(chatListViewLastPosition, chatListViewLastOffset);
+//                    }
 
                 }
 
@@ -910,6 +910,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
             buildImage(cameraPhotoFile.getAbsolutePath());
         }
-        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), false);
+        recyclerViewScroll.move(mChatMessageAdapter.getItemCount() - 1, false);
     }
 }

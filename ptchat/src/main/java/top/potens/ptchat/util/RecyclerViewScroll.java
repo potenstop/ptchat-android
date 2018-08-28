@@ -2,6 +2,7 @@ package top.potens.ptchat.util;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 /**
  * Created by wenshao on 2018/8/27.
