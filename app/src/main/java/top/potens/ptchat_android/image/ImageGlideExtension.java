@@ -23,8 +23,15 @@ public class ImageGlideExtension {
      */
     @GlideOption
     public static void configConcatHead(RequestOptions options) {
-        options.override(60, 60);
+        options.placeholder(top.potens.ptchat.R.mipmap.load_ing).override(60, 60);
 
+    }
+    /**
+     * 联系人头像快速设置
+     */
+    @GlideOption
+    public static void configChatImage(RequestOptions options, int width, int height) {
+        options.placeholder(top.potens.ptchat.R.mipmap.load_ing).override(width, height);
     }
 
     /**

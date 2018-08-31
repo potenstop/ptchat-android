@@ -247,10 +247,9 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             @Override
             public void onSizeChanged(int w, int h, int oldWidth, int oldHeight) {
                 if (h > oldHeight) { // 键盘隐藏
-                    hideKeyboard(et_message);
-                    isKeyboardShow = false;
+                    // hideKeyboard(et_message);
                 } else { // 键盘显示
-                    isKeyboardShow = true;
+                    // showKeyboard(et_message);
 
 //                    // 平滑滚动到指定的位置
 //                    if (rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
@@ -488,10 +487,13 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
      * @param v 点击的控件
      */
     private void hideKeyboard(View v) {
+        logger.debug("hideKeyboard start:" + isKeyboardShow);
         InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (isKeyboardShow) {
             imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
             v.setFocusable(false);
+            v.setFocusableInTouchMode(false);
+            isKeyboardShow = false;
         }
 
     }
@@ -502,6 +504,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
      * @param v 点击的控件
      */
     private void showKeyboard(View v) {
+        logger.debug("showKeyboard start:" + isKeyboardShow);
         InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (!isKeyboardShow) {
             v.setFocusable(true);
@@ -509,6 +512,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             v.requestFocus();
             v.findFocus();
             imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+            isKeyboardShow = true;
         }
     }
 
@@ -557,6 +561,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
             if (!isEditText(et_message, ev) && !isSendButton(message_send, ev)) {
                 hideKeyboard(et_message);
+
             }
             return super.dispatchTouchEvent(ev);
         }
@@ -905,11 +910,17 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         if (requestCode == HandlerCode.REQUEST_IMAGE && resultCode == RESULT_OK) {
             List<String> strings = Matisse.obtainPathResult(data);
             for (String filepath : strings) {
-                buildImage(filepath);
+                File file = new File(filepath);
+                if (file.exists()) {
+                    buildImage(filepath);
+                }
             }
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
-            buildImage(cameraPhotoFile.getAbsolutePath());
+            File file = new File(cameraPhotoFile.getAbsolutePath());
+            if (file.exists()) {
+                buildImage(cameraPhotoFile.getAbsolutePath());
+            }
         }
-        recyclerViewScroll.move(mChatMessageAdapter.getItemCount() - 1, false);
+         recyclerViewScroll.move(mChatMessageAdapter.getItemCount() - 1, false);
     }
 }

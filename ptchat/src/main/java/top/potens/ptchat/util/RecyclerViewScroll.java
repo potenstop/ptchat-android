@@ -4,12 +4,17 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by wenshao on 2018/8/27.
  * RecyclerView滚动类
  */
 
 public class RecyclerViewScroll {
+    private static final Logger logger = LoggerFactory.getLogger(RecyclerViewScroll.class);
+
     // 当前item的索引
     private int index = 0;
     // RecyclerView 对象
@@ -32,6 +37,7 @@ public class RecyclerViewScroll {
                     int n = index - linearLayoutManager.findFirstVisibleItemPosition();
                     if (0 <= n && n < recyclerView.getChildCount()) {
                         int top = recyclerView.getChildAt(n).getTop();
+                        logger.debug("onScrollStateChanged top=" + top);
                         recyclerView.smoothScrollBy(0, top);
                     }
                 }
@@ -45,7 +51,8 @@ public class RecyclerViewScroll {
                     int n = index - linearLayoutManager.findFirstVisibleItemPosition();
                     if (0 <= n && n < recyclerView.getChildCount()) {
                         int top = recyclerView.getChildAt(n).getTop();
-                        recyclerView.scrollBy(0, top);
+                        logger.debug("onScrolled top=" + top);
+                        recyclerView.smoothScrollBy(0, top);
                     }
                 }
             }
