@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 .forResult(1);
 
         final UserBean otherBean = new UserBean("2", "http://img.zcool.cn/community/01d881579dc3620000018c1b430c4b.JPG@3000w_1l_2o_100sh.jpg", "cc");
-        new Thread(new Runnable() {
+        /*new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-        }).start();
+        }).start();*/
     }
 
     @Override

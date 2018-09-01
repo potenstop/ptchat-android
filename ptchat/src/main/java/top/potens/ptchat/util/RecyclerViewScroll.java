@@ -71,11 +71,12 @@ public class RecyclerViewScroll {
 
     /**
      * 指定下标为n的item置顶
-     * @param n             下标
-     * @param isSmooth     是否平滑移动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
+     *
+     * @param n        下标
+     * @param isSmooth 是否平滑移动  在键盘打开的情况下必须用smoothScrollToPosition模拟滚动 使用scrollToPosition无效
      */
     public void move(int n, boolean isSmooth) {
-        if (n < 0 ) {
+        if (n < 0) {
             return;
         }
         index = n;
@@ -87,9 +88,10 @@ public class RecyclerViewScroll {
     /**
      * 直接移动到底部
      */
-    public void moveBottom() {
-        move(recyclerView.getAdapter().getItemCount(), false);
+    public void moveBottom(boolean isSmooth) {
+        move(recyclerView.getAdapter().getItemCount() -1, isSmooth);
     }
+
     private void smoothMoveToPosition(int n) {
         int firstItem = linearLayoutManager.findFirstVisibleItemPosition();
         int lastItem = linearLayoutManager.findLastVisibleItemPosition();
@@ -119,6 +121,7 @@ public class RecyclerViewScroll {
             isMove = true;
         }
     }
+
 
 
 }

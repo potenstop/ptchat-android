@@ -25,7 +25,7 @@ public class ChatGlide4Engine implements ChatImageEngine {
     public void loadImage(Context context, String url, ImageView view) {
         GlideApp.with(context)
                 .load(url)
-                .configChatImage(700, 700)
+                .configChatImage(view.getMaxWidth(), view.getMaxHeight())
                 .into(view);
 
     }

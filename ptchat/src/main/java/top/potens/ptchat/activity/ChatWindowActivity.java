@@ -95,11 +95,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     private UserBean mUserBean;
     private MultiLineEditText et_message;
-    private List<MessageBean> messageBeanList;
     private ChatMessageAdapter mChatMessageAdapter;
     private RecyclerView rv_message_list;
-    private int chatListViewLastOffset;
-    private int chatListViewLastPosition;
     private LinearLayout face_container;
     private LinearLayout record_container;
     private Dialog mRecordDialog;
@@ -109,7 +106,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     private List<View> faceViews = new ArrayList<View>();
     private ViewPager mViewPager;
 
-    private int mLastPosition = 0;
 
 
     private boolean isKeyboardShow = true;
@@ -177,14 +173,9 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         initUi();
         InitFaceViewPager();
-        initSocket();
-        initReceiver();
         // initData();
 
         initDialog();
-        // 清除未读的消息
-        cleanUnread();
-
 
     }
 
@@ -233,7 +224,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         mChatMessageAdapter = new ChatMessageAdapter(mContext);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         //linearLayoutManager.setReverseLayout(true);  // 顺序反转
-        //linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setStackFromEnd(true);  // ！！重要 从下到上依次添加item
         rv_message_list.setLayoutManager(linearLayoutManager);
         rv_message_list.setAdapter(mChatMessageAdapter);
         rv_message_list.setHasFixedSize(true);
@@ -246,17 +237,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         rl_chat_main.setOnSizeChangedListener(new KeyboardRelativeLayout.OnSizeChangedListener() {
             @Override
             public void onSizeChanged(int w, int h, int oldWidth, int oldHeight) {
-                if (h > oldHeight) { // 键盘隐藏
-                    // hideKeyboard(et_message);
-                } else { // 键盘显示
-                    // showKeyboard(et_message);
 
-//                    // 平滑滚动到指定的位置
-//                    if (rv_message_list.getLayoutManager() != null && chatListViewLastPosition >= 0) {
-//                        // ((LinearLayoutManager) rv_message_list.getLayoutManager()).scrollToPositionWithOffset(chatListViewLastPosition, chatListViewLastOffset);
-//                    }
-
-                }
 
             }
         });
@@ -315,15 +296,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         return max;
     }
 
-    private void initSocket() {
-
-    }
-
-    // 初始化广播接听事件
-    private void initReceiver() {
-
-
-    }
 
 
     /**
@@ -395,20 +367,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     }
 
-    private void cleanUnread() {
-        /*DaoSession ds = GlobalApplication.getDaoInstant();
-        List<RecentContactBean> list = ds.getRecentContactBeanDao()
-                .queryBuilder()
-                .where(RecentContactBeanDao.Properties.User_id.eq(mReceiveUserBean.getUser_id()))
-                .limit(1)
-                .list();
-        if (list.size()>0){
-            RecentContactBean recentContactBean = list.get(0);
-            GlobalApplication.clearUnreadNumber(recentContactBean);
-        }*/
-
-    }
-
     @Override
     public void onCreateCustomToolBar(Toolbar toolbar) {
         mUserBean = (UserBean) getIntent().getSerializableExtra("userInfo");
@@ -468,14 +426,12 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
         sendMsg(messageBean);
         mChatMessageAdapter.add(messageBean);
-        mLastPosition = mChatMessageAdapter.getItemCount();
-        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), true);
+        recyclerViewScroll.moveBottom( true);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // unregisterReceiver(mNewMessageReceiver);
         mAudioRecord.reset();
 
     }
@@ -516,45 +472,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         }
     }
 
-    /**
-     * 设置滚动的item位置
-     */
-    @Deprecated
-    private void setScrollLocation(RecyclerView recyclerView, int newState) {
-        //当前状态为停止滑动状态SCROLL_STATE_IDLE时
-        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-            /*//et_message.setFocusable(true);
-            RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-            if (layoutManager instanceof GridLayoutManager) {
-                //通过LayoutManager找到当前显示的最后的item的position
-                mLastPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
-            } else if (layoutManager instanceof LinearLayoutManager) {
-                mLastPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
-            } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-                //因为StaggeredGridLayoutManager的特殊性可能导致最后显示的item存在多个，所以这里取到的是一个数组
-                //得到这个数组后再取到数组中position值最大的那个就是最后显示的position值了
-                int[] lastPositions = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
-                ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(lastPositions);
-                mLastPosition = findMax(lastPositions);
-            }*/
-
-            //时判断界面显示的最后item的position是否等于itemCount总数-1也就是最后一个item的position
-            //如果相等则说明已经滑动到最后了
-                    /*if (mLastPosition == recyclerView.getLayoutManager().getItemCount() - 1) {
-                        Toast.makeText(ChatWindowActivity.this, "滑动到底了", Toast.LENGTH_SHORT).show();
-                    }*/
-            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-            //获取可视的第一个view
-            View topView = layoutManager.getChildAt(0);
-            if (topView != null) {
-                // 获取与该view的顶部的偏移量
-                chatListViewLastOffset = topView.getTop();
-                // 得到该View的数组位置
-                chatListViewLastPosition = layoutManager.getPosition(topView);
-            }
-
-        }
-    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -634,7 +551,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 this.openImage();
             } else {
                 EasyPermissions.requestPermissions(this, "相册需要文件读取权限",
-                        permissionAudio.getCode(), permissionImage.getPermissions());
+                        permissionImage.getCode(), permissionImage.getPermissions());
             }
 
         } else if (i == R.id.ib_camera) {
@@ -642,7 +559,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 this.openCamera();
             } else {
                 EasyPermissions.requestPermissions(this, "相机需要文件读取权限",
-                        permissionAudio.getCode(), permissionCamera.getPermissions());
+                        permissionCamera.getCode(), permissionCamera.getPermissions());
             }
         } else if (i == R.id.ib_face) {
             if (face_container.getVisibility() == View.GONE) {
@@ -773,7 +690,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setReceiveId("11");
         messageBean.setCreateTime(new Date().getTime());
         mChatMessageAdapter.add(messageBean);
-        recyclerViewScroll.move(mChatMessageAdapter.getItemCount(), true);
+        recyclerViewScroll.moveBottom( false);
         return messageBean;
     }
 
@@ -835,12 +752,18 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         mFaceHelper.delete(et_message.getText());
     }
 
-
+    /**
+     * 处理item点击事件
+     * @param view          点击的view
+     * @param position      item下标
+     */
     @Override
     public void onMessageItemClick(View view, int position) {
         List<MessageBean> dataList = mChatMessageAdapter.getDataList();
         MessageBean messageBean = dataList.get(position);
         if (MessageBean.TYPE_AUDIO.equals(messageBean.getType())) {  // 点击了语音类型的消息
+            // AudioRecordUtil audioRecordUtil = new AudioRecordUtil(messageBean.getContent());
+            // audioRecordUtil.startPlay();
         } else if (MessageBean.TYPE_TEXT.equals(messageBean.getType())) {
 
         } else if (MessageBean.TYPE_IMAGE.equals(messageBean.getType())) {
@@ -848,11 +771,15 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         }
     }
 
+    @Override
+    public void onMessageItemDoubleClick(View view, int position) {
+
+    }
+
     // 页面中插入一条消息
     public void insertPageMessage(MessageBean messageBean) {
         mChatMessageAdapter.add(messageBean);
-        mLastPosition = mChatMessageAdapter.getItemCount();
-        rv_message_list.smoothScrollToPosition(mLastPosition);
+        recyclerViewScroll.moveBottom(true);
     }
     @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
@@ -881,7 +808,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            //new AppSettingsDialog.Builder(this).build().show();
             new AppSettingsDialog.Builder(this)
                     .setTitle("必须的权限")
                     .setPositiveButton("去设置")
@@ -899,7 +825,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        //PermissionConstant.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
@@ -921,6 +846,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
                 buildImage(cameraPhotoFile.getAbsolutePath());
             }
         }
-         recyclerViewScroll.move(mChatMessageAdapter.getItemCount() - 1, false);
+        recyclerViewScroll.moveBottom( false);
     }
 }

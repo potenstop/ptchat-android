@@ -107,6 +107,9 @@ public class AudioRecordUtil {
 
     }
 
+    /**
+     * 播放语音
+     */
     public void startPlay() {
         mPlayer = new MediaPlayer();
         try {
@@ -124,7 +127,9 @@ public class AudioRecordUtil {
     }
 
 
-
+    /**
+     * 结束播放
+     */
     public void endPlay() {
         if (mPlayer != null) {
             mPlayer.stop();
