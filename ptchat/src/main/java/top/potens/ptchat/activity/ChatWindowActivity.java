@@ -754,11 +754,10 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
 
     /**
      * 处理item点击事件
-     * @param view          点击的view
      * @param position      item下标
      */
     @Override
-    public void onMessageItemClick(View view, int position) {
+    public void onMessageItemClick(int position) {
         List<MessageBean> dataList = mChatMessageAdapter.getDataList();
         MessageBean messageBean = dataList.get(position);
         if (MessageBean.TYPE_AUDIO.equals(messageBean.getType())) {  // 点击了语音类型的消息
@@ -767,12 +766,21 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         } else if (MessageBean.TYPE_TEXT.equals(messageBean.getType())) {
 
         } else if (MessageBean.TYPE_IMAGE.equals(messageBean.getType())) {
-
+            startActivity(new Intent(mContext, ImageMessageOverallActivity.class));
         }
     }
 
     @Override
-    public void onMessageItemDoubleClick(View view, int position) {
+    public void onMessageItemDoubleClick(int position) {
+        List<MessageBean> dataList = mChatMessageAdapter.getDataList();
+        MessageBean messageBean = dataList.get(position);
+        if (MessageBean.TYPE_AUDIO.equals(messageBean.getType())) {  // 点击了语音类型的消息
+
+        } else if (MessageBean.TYPE_TEXT.equals(messageBean.getType())) {
+
+        } else if (MessageBean.TYPE_IMAGE.equals(messageBean.getType())) {
+
+        }
 
     }
 

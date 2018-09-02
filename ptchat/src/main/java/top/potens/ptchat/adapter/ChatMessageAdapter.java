@@ -123,13 +123,12 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     }
 
-    private class ChatLeftViewHolder extends BaseAdapter implements View.OnClickListener {
+    private class ChatLeftViewHolder extends BaseAdapter implements View.OnTouchListener {
         private ImageView rw_head;
         private TextView tv_content;
         private ImageView rw_content;
         private VoicePlayingView vpv_audio;
-
-        private OnMessageItemClickListener mListener;
+        private GestureDetector mGestureDetector;
 
 
         public ChatLeftViewHolder(View view, OnMessageItemClickListener listener) {
@@ -138,9 +137,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             tv_content = view.findViewById(R.id.tv_content);
             rw_content = view.findViewById(R.id.rw_content);
             vpv_audio = view.findViewById(R.id.vpv_audio);
-            mListener = listener;
-            view.setOnClickListener(this);
-
+            mGestureDetector = new GestureDetector(mContext, new DefaultGestureListener(listener));
+            view.setOnTouchListener(this);
         }
 
         @Override
@@ -173,13 +171,13 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             }
 
         }
-
         @Override
-        public void onClick(View v) {
-            if (mListener != null) {
-                mListener.onMessageItemClick(v, getAdapterPosition());
-            }
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            motionEvent.setEdgeFlags(getAdapterPosition());
+            mGestureDetector.onTouchEvent(motionEvent);
+            return true;
         }
+
     }
 
     private class ChatRightViewHolder extends BaseAdapter implements View.OnTouchListener {
@@ -187,7 +185,6 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         private TextView tv_content;
         private ImageView rw_content;
         private VoicePlayingView vpv_audio;
-        private OnMessageItemClickListener mListener;
         private GestureDetector mGestureDetector;
 
         public ChatRightViewHolder(View view, OnMessageItemClickListener listener) {
@@ -201,12 +198,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             rw_content = view.findViewById(R.id.rw_content);
             vpv_audio = view.findViewById(R.id.vpv_audio);
 
-            mListener = listener;
-            // view.setOnClickListener(this);
-            mGestureDetector = new GestureDetector(mContext, new DefaultGestureListener());
-
+            mGestureDetector = new GestureDetector(mContext, new DefaultGestureListener(listener));
             view.setOnTouchListener(this);
-
 
         }
 
@@ -232,7 +225,6 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.VISIBLE);
                 vpv_audio.setDuration(messageBean.getDuration());
-                String proxyUrl;
                /* if (messageBean.getContent().matches(fileRegex)){
                     proxyUrl=messageBean.getContent();
                 }else{
@@ -248,6 +240,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            motionEvent.setEdgeFlags(getAdapterPosition());
             mGestureDetector.onTouchEvent(motionEvent);
             return true;
         }
@@ -264,13 +257,17 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     // item点击事件监听接口
     public interface OnMessageItemClickListener {
-        public void onMessageItemClick(View view, int position);
-
-        public void onMessageItemDoubleClick(View view, int position);
+        public void onMessageItemClick(int position);
+        public void onMessageItemDoubleClick(int position);
     }
 
     private class DefaultGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private OnMessageItemClickListener eventOnMessageItemClickListener;
+        public DefaultGestureListener(OnMessageItemClickListener onMessageItemClickListener){
+            this.eventOnMessageItemClickListener = onMessageItemClickListener;
+        }
         // ================================== 触发顺序： onDown->onShowPress->onLongPress
+
 
         /**
          * 用户触发DownEvent就会执行
@@ -290,6 +287,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
          */
         @Override
         public void onShowPress(MotionEvent e) {
+            logger.debug("onSingleTapUp");
 
         }
 
@@ -300,7 +298,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
          */
         @Override
         public void onLongPress(MotionEvent e) {
-
+            logger.debug("onSingleTapUp");
         }
 
         //==============================================
@@ -313,6 +311,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         // onDown->onShowPress->onSingleTapUp->onSingleTapConfirmed
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            if (this.eventOnMessageItemClickListener != null)
+                this.eventOnMessageItemClickListener.onMessageItemClick(e.getEdgeFlags());
             return false;
         }
 
@@ -343,16 +343,21 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             return false;
         }
 
-
+        // 在双击的第二下，Touch down时触发 。
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             logger.debug("=======onDoubleTap");
+
             return false;
         }
 
+        // 通知DoubleTap手势中的事件，包含down、up和move事件（这里指的是在双击之间发生的事件，
+        // 例如在同一个地方双击会产生DoubleTap手势，而在DoubleTap手势里面还会发生down和up事件，
+        // 这两个事件由该函数通知）；双击的第二下Touch down和up都会触发，可用e.getAction()区分。
         @Override
         public boolean onDoubleTapEvent(MotionEvent e) {
-            logger.debug("=======onDoubleTapEvent");
+            if (this.eventOnMessageItemClickListener != null)
+                this.eventOnMessageItemClickListener.onMessageItemDoubleClick(e.getEdgeFlags());
             return false;
         }
 

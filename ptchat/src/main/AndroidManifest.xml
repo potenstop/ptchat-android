@@ -6,6 +6,9 @@
             android:name=".activity.ChatWindowActivity"
             android:theme="@style/IndexTheme"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".activity.ImageMessageOverallActivity"
+            android:theme="@style/AppThemeParent" />
 
     </application>
 </manifest>
