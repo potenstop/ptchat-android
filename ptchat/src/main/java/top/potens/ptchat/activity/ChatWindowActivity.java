@@ -75,6 +75,7 @@ import top.potens.ptchat.util.DisplayUtil;
 import top.potens.ptchat.util.FileManageUtil;
 import top.potens.ptchat.util.RecyclerViewScroll;
 import top.potens.ptchat.util.ToastUtil;
+import top.potens.ptchat.util.ViewUtil;
 import top.potens.ptchat.view.CirclePlayProgress;
 import top.potens.ptchat.view.KeyboardRelativeLayout;
 import top.potens.ptchat.view.MultiLineEditText;
@@ -476,7 +477,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (!isEditText(et_message, ev) && !isSendButton(message_send, ev)) {
+            if (!ViewUtil.isTouchView(et_message, ev) && !ViewUtil.isTouchView(message_send, ev)) {
                 hideKeyboard(et_message);
 
             }
@@ -484,53 +485,6 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         }
         // 必不可少，否则所有的组件都不会有TouchEvent了
         return getWindow().superDispatchTouchEvent(ev) || onTouchEvent(ev);
-    }
-
-
-    /**
-     * 判断当前点击是否为输入框
-     *
-     * @param v     点击的控件
-     * @param event 点击事件
-     * @return true:点击的为输入框 false其他控件
-     */
-    private boolean isEditText(View v, MotionEvent event) {
-        if (v != null && (v instanceof EditText)) {
-            int[] leftTop = {0, 0};
-            //获取输入框当前的location
-            v.getLocationInWindow(leftTop);
-            int left = leftTop[0];
-            int top = leftTop[1];
-            int bottom = top + v.getHeight();
-            int right = left + v.getWidth();
-            // 点击的是输入框区域，保留点击EditText的事件
-            return event.getX() > left && event.getX() < right
-                    && event.getY() > top && event.getY() < bottom;
-        }
-        return false;
-    }
-
-    /**
-     * 判断当前点击是否为发送按钮
-     *
-     * @param v     点击的控件
-     * @param event 点击事件
-     * @return true:点击的为输入框 false其他控件
-     */
-    private boolean isSendButton(View v, MotionEvent event) {
-        if (v != null && (v instanceof Button)) {
-            int[] leftTop = {0, 0};
-            //获取当前发送按钮的location
-            v.getLocationInWindow(leftTop);
-            int left = leftTop[0];
-            int top = leftTop[1];
-            int bottom = top + v.getHeight();
-            int right = left + v.getWidth();
-            // 点击的是输入框区域，保留点击EditText的事件
-            return event.getX() > left && event.getX() < right
-                    && event.getY() > top && event.getY() < bottom;
-        }
-        return false;
     }
 
     @Override
@@ -766,7 +720,9 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         } else if (MessageBean.TYPE_TEXT.equals(messageBean.getType())) {
 
         } else if (MessageBean.TYPE_IMAGE.equals(messageBean.getType())) {
-            startActivity(new Intent(mContext, ImageMessageOverallActivity.class));
+            Intent intent = new Intent(mContext, ImageMessageOverallActivity.class);
+            intent.putExtra("imagePath", messageBean.getContent());
+            startActivity(intent);
         }
     }
 

@@ -14,7 +14,7 @@ import top.potens.ptchat.bean.MessageBean;
 import top.potens.ptchat.bean.UserBean;
 import top.potens.ptchat.network.DataInteraction;
 import top.potens.ptchat.network.SendCallback;
-import top.potens.ptchat_android.engine.ChatGlide4Engine;
+import top.potens.ptchat_android.engine.PtchatGlide4Engine;
 import top.potens.ptchat_android.engine.MatisseGlide4Engine;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         final Ptchat ptchat = Ptchat.from(this)
                 .userInfo(userBean)
                 .matisseImageEngine(new MatisseGlide4Engine())
-                .chatImageEngine(new ChatGlide4Engine())
+                .chatImageEngine(new PtchatGlide4Engine())
                 .dataStrategy(new DataInteraction() {
                     @Override
                     public List<MessageBean> initData() {
