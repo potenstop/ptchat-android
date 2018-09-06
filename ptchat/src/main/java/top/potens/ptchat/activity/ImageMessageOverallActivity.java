@@ -65,5 +65,11 @@ public class ImageMessageOverallActivity extends Activity {
         }
         return super.dispatchTouchEvent(ev);
     }
+    void showBottomSheetDialog(){
+        BottomSheetDialog bottomSheet = new BottomSheetDialog(this);//实例化
+        BottomSheetDialog bottomSheet.setCancelable(true);//设置点击外部是否可以取消
+        bottomSheet.setContentView(R.layout.dialog_layout);//设置对框框中的布局
+        bottomSheet.show();//显示弹窗
+    }
 
 }
