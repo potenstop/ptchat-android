@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetDialog;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -21,19 +21,19 @@ import top.potens.ptchat.util.ViewUtil;
  * Created by wenshao on 2018/9/2.
  * 图片消息全屏页面
  */
-public class ImageMessageOverallActivity extends Activity {
+public class ImageMessageOverallActivity extends Activity implements View.OnClickListener {
     private static final Logger logger = LoggerFactory.getLogger(ImageMessageOverallActivity.class);
     private Context mContext;
     private String imagePath;
     private ImageView message_overall_image;
     private ImageButton message_overall_more;
+    private BottomSheetDialog bottomSheetDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
         setContentView(R.layout.activity_image_message_overall);
-
         checkParams();
         initUi();
     }
@@ -49,12 +49,21 @@ public class ImageMessageOverallActivity extends Activity {
 
     // 初始化ui
     private void initUi() {
+
+        View bottom_dialog_image_overall = View.inflate(this, R.layout.bottom_dialog_image_overall, null);
         message_overall_image = findViewById(R.id.message_overall_image);
         message_overall_more = findViewById(R.id.message_overall_more);
 
         GlobalStaticVariable.getPtchat().getChatImageEngine().loadCommonImage(mContext, imagePath, message_overall_image);
-    }
+        bottomSheetDialog = new BottomSheetDialog(mContext);
 
+        bottomSheetDialog.setContentView(bottom_dialog_image_overall);
+
+        message_overall_more.setOnClickListener(this);
+    }
+    private void showButton() {
+        bottomSheetDialog.show();
+    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -65,11 +74,15 @@ public class ImageMessageOverallActivity extends Activity {
         }
         return super.dispatchTouchEvent(ev);
     }
-    void showBottomSheetDialog(){
-        BottomSheetDialog bottomSheet = new BottomSheetDialog(this);//实例化
-        BottomSheetDialog bottomSheet.setCancelable(true);//设置点击外部是否可以取消
-        bottomSheet.setContentView(R.layout.dialog_layout);//设置对框框中的布局
-        bottomSheet.show();//显示弹窗
-    }
 
+
+
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.message_overall_more) {
+            showButton();
+        }
+    }
 }

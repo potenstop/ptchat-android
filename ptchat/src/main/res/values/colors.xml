@@ -19,4 +19,7 @@
     <color name="finalButtonNormal">#23baf4</color>
     <color name="lighter_gray">#dddddd</color>
     <color name="deepGray">#817f7f</color>
+    <!--图片底部弹出层颜色-->
+    <color name="pressed">#E5E3E4</color>
+    <color name="shallow_pressed">#FAFAFA</color>
 </resources>
