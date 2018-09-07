@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialog;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -54,6 +55,15 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
         message_overall_image = findViewById(R.id.message_overall_image);
         message_overall_more = findViewById(R.id.message_overall_more);
 
+        Button imo_save = bottom_dialog_image_overall.findViewById(R.id.imo_save);
+        Button imo_send = bottom_dialog_image_overall.findViewById(R.id.imo_send);
+        Button imo_cancel = bottom_dialog_image_overall.findViewById(R.id.imo_cancel);
+
+        imo_save.setOnClickListener(this);
+        imo_send.setOnClickListener(this);
+        imo_cancel.setOnClickListener(this);
+
+
         GlobalStaticVariable.getPtchat().getChatImageEngine().loadCommonImage(mContext, imagePath, message_overall_image);
         bottomSheetDialog = new BottomSheetDialog(mContext);
 
@@ -61,10 +71,6 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
 
         message_overall_more.setOnClickListener(this);
     }
-    private void showButton() {
-        bottomSheetDialog.show();
-    }
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
@@ -82,7 +88,13 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.message_overall_more) {
-            showButton();
+            bottomSheetDialog.show();
+        } else if (id == R.id.imo_cancel) {
+            bottomSheetDialog.cancel();
+        } else if (id == R.id.imo_send) {
+
+        } else if (id == R.id.imo_save) {
+
         }
     }
 }

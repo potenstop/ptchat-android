@@ -4,37 +4,23 @@
     android:layout_height="match_parent"
     android:background="@color/pressed">
     <Button
-        android:id="@+id/takePhoto"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/image_overall_pop_selector"
-        android:gravity="center"
-        android:text="@string/save_phone"
-        android:textColor="@android:color/black"
-        android:textSize="@dimen/text_size" />
+        style="@style/bottomDialogWhite"
+        android:id="@+id/imo_save"
+        android:text="@string/save_phone"/>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:background="@color/shallow_pressed"/>
 
     <Button
-        android:id="@+id/choosePhoto"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/image_overall_pop_selector"
-        android:gravity="center"
-        android:text="@string/send_friend"
-        android:textColor="@android:color/black"
-        android:textSize="@dimen/text_size"/>
+        android:id="@+id/imo_send"
+        style="@style/bottomDialogWhite"
+        android:text="@string/send_friend"/>
 
     <Button
-        android:id="@+id/btn_cancel"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
+        style="@style/bottomDialogWhite"
+        android:id="@+id/imo_cancel"
         android:layout_marginTop="8dp"
-        android:background="@color/image_overall_pop_selector"
-        android:gravity="center"
-        android:text="@string/cancel"
-        android:textColor="@android:color/black"
-        android:textSize="@dimen/text_size"/>
+        android:text="@string/cancel" />
 </LinearLayout>
