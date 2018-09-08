@@ -10,12 +10,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
+import pub.devrel.easypermissions.EasyPermissions;
 import top.potens.ptchat.GlobalStaticVariable;
 import top.potens.ptchat.R;
+import top.potens.ptchat.constant.PermissionConstant;
+import top.potens.ptchat.util.FileManageUtil;
+import top.potens.ptchat.util.ToastUtil;
 import top.potens.ptchat.util.ViewUtil;
 
 /**
@@ -63,6 +70,8 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
         imo_send.setOnClickListener(this);
         imo_cancel.setOnClickListener(this);
 
+        message_overall_image.setOnClickListener(this);
+
 
         GlobalStaticVariable.getPtchat().getChatImageEngine().loadCommonImage(mContext, imagePath, message_overall_image);
         bottomSheetDialog = new BottomSheetDialog(mContext);
@@ -71,17 +80,16 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
 
         message_overall_more.setOnClickListener(this);
     }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        switch (ev.getAction()) {
+        /*switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 if (!ViewUtil.isTouchView(message_overall_more, ev)) finish();
                 break;
-        }
+        }*/
         return super.dispatchTouchEvent(ev);
     }
-
-
 
 
     @Override
@@ -94,7 +102,16 @@ public class ImageMessageOverallActivity extends Activity implements View.OnClic
         } else if (id == R.id.imo_send) {
 
         } else if (id == R.id.imo_save) {
-
+            boolean b = EasyPermissions.hasPermissions(mContext, PermissionConstant.getExternalStoragePermissions(1).getPermissions());
+            if (!b) ToastUtil.showShortToastTop(mContext, "没有权限");
+            else {
+                String saveFilePath = GlobalStaticVariable.getPtchat().getImageDir() + "/" + new File(imagePath).getName();
+                FileManageUtil.copyFile(imagePath, saveFilePath);
+                ToastUtil.showLongToastTop(mContext, getString(R.string.save_succeed) + saveFilePath);
+                bottomSheetDialog.cancel();
+            }
+        } else if (id == R.id.message_overall_image) {
+            finish();
         }
     }
 }

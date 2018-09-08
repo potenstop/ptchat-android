@@ -1,6 +1,7 @@
 package top.potens.ptchat_android;
 
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -27,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
                 .userInfo(userBean)
                 .matisseImageEngine(new MatisseGlide4Engine())
                 .chatImageEngine(new PtchatGlide4Engine())
+                .imageDir(Environment.getExternalStorageDirectory()+ "/ptchat/image")
+                .fileDir(Environment.getExternalStorageDirectory()+ "/ptchat/files")
+                .toastPrefix("ptchat-android:")
                 .dataStrategy(new DataInteraction() {
                     @Override
                     public List<MessageBean> initData() {

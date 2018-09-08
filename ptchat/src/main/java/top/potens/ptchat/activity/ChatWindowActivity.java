@@ -303,7 +303,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
      * 初始化录音弹出窗口
      */
     private void initDialog() {
-        final String audioPath = FileManageUtil.getAudioPath(this) + "audio.amr";
+        final String audioPath = FileManageUtil.getTmpAudioPath(this) + "audio.amr";
         View view = View.inflate(this, R.layout.record_dialog, null);
         mRecordDialog = new Dialog(this, R.style.DialogStyle);
         mRecordDialog.setContentView(view);
@@ -407,7 +407,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         String text = et_message.getText().toString().trim();
 
         if (TextUtils.isEmpty(text)) {
-            ToastUtil.showShortToast(mContext, "文本内容不能为空");
+            ToastUtil.showShortToast(mContext, getString(R.string.send_context_isnull));
             return;
         }
         MessageBean messageBean = new MessageBean();

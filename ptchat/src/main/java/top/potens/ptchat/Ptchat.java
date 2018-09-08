@@ -3,6 +3,7 @@ package top.potens.ptchat;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 
 import java.lang.ref.WeakReference;
@@ -13,6 +14,7 @@ import top.potens.ptchat.bean.UserBean;
 import top.potens.ptchat.engine.PtchatImageEngine;
 import top.potens.ptchat.engine.MatisseImageEngine;
 import top.potens.ptchat.network.DataInteraction;
+import top.potens.ptchat.util.ToastUtil;
 
 /**
  * Created by wenshao on 2018/7/22.
@@ -25,6 +27,9 @@ public class Ptchat {
     private DataInteraction mDataInteraction;
     private MatisseImageEngine mMatisseImageEngine;
     private PtchatImageEngine mPtchatImageEngine;
+    private String mImageDir;;
+    private String mFileDir;
+    private String mToastPrefix;
 
     private Ptchat(Activity activity) {
         this(activity, null);
@@ -37,6 +42,12 @@ public class Ptchat {
     private Ptchat(Activity activity, Fragment fragment) {
         mActivity = new WeakReference<>(activity);
         mFragment = new WeakReference<>(fragment);
+        init();
+    }
+
+    private void init() {
+        mImageDir = mActivity.get().getFilesDir().getPath()+"/image";
+        mFileDir = mActivity.get().getFilesDir().getPath()+"/file";
     }
 
     /**
@@ -101,6 +112,35 @@ public class Ptchat {
         return this;
     }
 
+    /**
+     * 配置图片保存目录
+     * @param imageDir      目录路径
+     * @return              Ptchat
+     */
+    public Ptchat imageDir(String imageDir){
+        mImageDir = imageDir;
+        return  this;
+    }
+    /**
+     * 配置文件保存目录
+     * @param fileDir       目录路径
+     * @return              Ptchat
+     */
+    public Ptchat fileDir(String fileDir){
+        mFileDir = fileDir;
+        return  this;
+    }
+
+    /**
+     * 配置文件保存目录
+     * @param prefix        前缀
+     * @return              Ptchat
+     */
+    public Ptchat toastPrefix(String prefix){
+        mToastPrefix = prefix;
+        ToastUtil.prefix = prefix;
+        return  this;
+    }
     public MatisseImageEngine getMatisseImageEngine() {
         return mMatisseImageEngine;
     }
@@ -110,6 +150,17 @@ public class Ptchat {
 
     public DataInteraction getDataInteraction() {
         return mDataInteraction;
+    }
+    public String getImageDir() {
+        return mImageDir;
+    }
+
+    public String getFileDir() {
+        return mFileDir;
+    }
+
+    public String getToastPrefix() {
+        return mToastPrefix;
     }
 
     /**
