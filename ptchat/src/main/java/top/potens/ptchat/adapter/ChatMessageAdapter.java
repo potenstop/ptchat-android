@@ -18,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import top.potens.ptchat.GlobalStaticVariable;
 import top.potens.ptchat.R;
@@ -42,6 +44,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     private Context mContext;
     private final static String fileRegex = "^file://.*";
     private PtchatImageEngine mPtchatImageEngine = GlobalStaticVariable.getPtchat().getChatImageEngine();
+    private Map<String, TextView> textViewMapSendCode = new HashMap<>();
 
 
     public ChatMessageAdapter(Context context) {
@@ -122,6 +125,17 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
 
     }
 
+    /**
+     * 设置消息的状态
+     * @param sendCode      sendCode
+     * @param status        状态
+     */
+    public void setMessageStatus(String sendCode, int status) {
+        if (textViewMapSendCode.containsKey(sendCode)) {
+            textViewMapSendCode.get(sendCode).setText(mContext.getString(MessageBean.getStatusResourceId(status)));
+        }
+
+    }
     private class ChatLeftViewHolder extends BaseAdapter implements View.OnTouchListener {
         private ImageView rw_head;
         private TextView tv_content;
@@ -130,12 +144,15 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         private GestureDetector mGestureDetector;
 
 
+
         public ChatLeftViewHolder(View view, OnMessageItemClickListener listener) {
             super(view);
             rw_head = view.findViewById(R.id.rw_head);
             tv_content = view.findViewById(R.id.tv_content);
             rw_content = view.findViewById(R.id.rw_content);
             vpv_audio = view.findViewById(R.id.vpv_audio);
+
+
             mGestureDetector = new GestureDetector(mContext, new DefaultGestureListener(listener));
             view.setOnTouchListener(this);
         }
@@ -164,9 +181,8 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 rw_content.setVisibility(View.GONE);
                 vpv_audio.setVisibility(View.VISIBLE);
                 vpv_audio.setDuration(messageBean.getDuration());
-                /*String proxyUrl = mProxy.getProxyUrl(messageBean.getContent());
 
-                vpv_audio.setMediaPlay(proxyUrl);*/
+
             }
 
         }
@@ -180,16 +196,26 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     }
 
     private class ChatRightViewHolder extends BaseAdapter implements View.OnTouchListener {
+        private RelativeLayout relative_tv_content;
+        private RelativeLayout relative_vpv_audio;
+        private RelativeLayout relative_rw_content;
         private ImageView rw_head;
         private TextView tv_content;
         private ImageView rw_content;
         private VoicePlayingView vpv_audio;
         private GestureDetector mGestureDetector;
+        private TextView tv_content_status;
+        private TextView rw_content_status;
+        private TextView vpv_audio_status;
 
         public ChatRightViewHolder(View view, OnMessageItemClickListener listener) {
             super(view);
             RelativeLayout ry_message_main = view.findViewById(R.id.ry_message_main);
 
+
+            relative_tv_content = view.findViewById(R.id.relative_tv_content);
+            relative_vpv_audio = view.findViewById(R.id.relative_vpv_audio);
+            relative_rw_content = view.findViewById(R.id.relative_rw_content);
 
             rw_head = view.findViewById(R.id.rw_head);
 
@@ -197,6 +223,9 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             rw_content = view.findViewById(R.id.rw_content);
             vpv_audio = view.findViewById(R.id.vpv_audio);
 
+            tv_content_status = view.findViewById(R.id.tv_content_status);
+            rw_content_status = view.findViewById(R.id.rw_content_status);
+            vpv_audio_status = view.findViewById(R.id.vpv_audio_status);
             mGestureDetector = new GestureDetector(mContext, new DefaultGestureListener(listener));
             view.setOnTouchListener(this);
 
@@ -207,32 +236,29 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             super.setData(messageBean);
             String head = messageBean.getFriendUserBean().getUserHead();
             mPtchatImageEngine.loadChatHead(mContext, head, rw_head);
+            // 判断消息的类型
             if (messageBean.getType().equals(MessageBean.TYPE_TEXT)) {
                 SpannableStringBuilder sb = FaceHelper.imageToGif(mContext, tv_content, messageBean.getContent());
-
-                rw_content.setVisibility(View.GONE);
-                vpv_audio.setVisibility(View.GONE);
-                tv_content.setVisibility(View.VISIBLE);
+                relative_rw_content.setVisibility(View.GONE);
+                relative_vpv_audio.setVisibility(View.GONE);
+                relative_tv_content.setVisibility(View.VISIBLE);
                 tv_content.setText(sb);
+                textViewMapSendCode.put(messageBean.getSendCode(),tv_content_status);
             } else if (messageBean.getType().equals(MessageBean.TYPE_IMAGE)) {
-                tv_content.setVisibility(View.GONE);
-                vpv_audio.setVisibility(View.GONE);
-                rw_content.setVisibility(View.VISIBLE);
+                relative_tv_content.setVisibility(View.GONE);
+                relative_vpv_audio.setVisibility(View.GONE);
+                relative_rw_content.setVisibility(View.VISIBLE);
                 mPtchatImageEngine.loadChatImage(mContext, messageBean.getContent(), rw_content);
+                textViewMapSendCode.put(messageBean.getSendCode(), rw_content_status);
             } else if (messageBean.getType().equals(MessageBean.TYPE_AUDIO)) {
-                tv_content.setVisibility(View.GONE);
-                rw_content.setVisibility(View.GONE);
-                vpv_audio.setVisibility(View.VISIBLE);
+                relative_tv_content.setVisibility(View.GONE);
+                relative_rw_content.setVisibility(View.GONE);
+                relative_vpv_audio.setVisibility(View.VISIBLE);
                 vpv_audio.setDuration(messageBean.getDuration());
-               /* if (messageBean.getContent().matches(fileRegex)){
-                    proxyUrl=messageBean.getContent();
-                }else{
-                    proxyUrl=mProxy.getProxyUrl(messageBean.getContent());
-                }
-
-
-                vpv_audio.setMediaPlay(proxyUrl);*/
+                textViewMapSendCode.put(messageBean.getSendCode(), vpv_audio_status);
             }
+            setMessageStatus(messageBean.getSendCode(), messageBean.getStatus());
+
 
         }
 

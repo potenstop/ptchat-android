@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,41 +16,75 @@
         android:layout_alignParentEnd="true"
         android:scaleType="fitXY"
         />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@+id/rw_head"
+        android:id="@+id/relative_tv_content"
+        android:visibility="gone">
+        <TextView
+            style="@style/MessageStatus"
+            android:id="@+id/tv_content_status" />
+        <TextView
+            android:id="@+id/tv_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:background="@drawable/aio_bg_default_right"
+            android:gravity="start"
+            android:layout_toEndOf="@id/tv_content_status"/>
 
-    <TextView
-        android:id="@+id/tv_content"
+    </RelativeLayout>
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        android:background="@drawable/aio_bg_default_right"
-        android:layout_toStartOf="@+id/rw_head"
-        android:gravity="left"
-        android:visibility="gone"/>
-    <top.potens.ptchat.view.VoicePlayingView
+        android:layout_toStartOf="@id/rw_head"
+        android:id="@+id/relative_vpv_audio"
+        android:visibility="visible">
+        <TextView
+            android:id="@+id/vpv_audio_status"
+            style="@style/MessageStatus" />
+        <top.potens.ptchat.view.VoicePlayingView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vpv_audio"
+            android:background="@drawable/aio_user_bg_nor_12"
+            app:arcColor="@color/deepGray"
+            app:toRightDistance="5dp"
+            app:direction="right"
+            app:textSize="15sp"
+            android:layout_toEndOf="@id/vpv_audio_status" />
+
+    </RelativeLayout>
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:id="@+id/vpv_audio"
-        android:background="@drawable/aio_user_bg_nor_12"
-        android:layout_toStartOf="@+id/rw_head"
-        app:arcColor="@color/deepGray"
-        app:toRightDistance="5dp"
-        app:direction="right"
-        app:textSize="15sp"
-        />
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxHeight="230dp"
-        android:maxWidth="230dp"
-        android:layout_toStartOf="@+id/rw_head"
-        android:id="@+id/rw_content"
-        android:layout_marginEnd="8dp"
-        android:visibility="visible"
-        android:layout_marginTop="2dp"
+        android:layout_toStartOf="@id/rw_head"
         android:layout_centerInParent="true"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"/>
+        android:id="@+id/relative_rw_content"
+        android:visibility="gone">
+        <TextView
+            style="@style/MessageStatus"
+            android:id="@+id/rw_content_status"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxHeight="230dp"
+            android:maxWidth="230dp"
+            android:id="@+id/rw_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="2dp"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_toEndOf="@id/rw_content_status"
+            android:contentDescription="@string/image" />
+
+    </RelativeLayout>
+
+
+
+
+
 
 </RelativeLayout>

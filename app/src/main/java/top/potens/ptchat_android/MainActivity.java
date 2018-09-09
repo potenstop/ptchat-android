@@ -1,6 +1,5 @@
 package top.potens.ptchat_android;
 
-import android.content.Intent;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
                         messageBean.setType(MessageBean.TYPE_TEXT);
                         messageBean.setContent("111111");
                         messageBean.setUserBean(userBean);
-                        messageBean.setSendId("111");
+                        messageBean.setMessageId("111");
                         messageBean.setReceiveId("111");
                         messageBean.setCreateTime(new Date().getTime());
 
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void sendData(MessageBean messageBean, SendCallback sendCallback) {
-                        sendCallback.success();
+                        sendCallback.success(messageBean);
                     }
                 })
                 .forResult(1);

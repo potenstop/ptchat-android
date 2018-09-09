@@ -31,7 +31,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -339,7 +338,8 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         btn_record_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                buildAudio(audioPath);
+                MessageBean messageBean = buildAudio(audioPath);
+                sendMsg(messageBean);
                 mAudioRecord.reset();
                 mRecordDialog.dismiss();
                 cpp_record_play.setImageResource(R.drawable.ic_action_playback_pause_big);
@@ -420,14 +420,15 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setType(MessageBean.TYPE_TEXT);
         messageBean.setContent(text);
         messageBean.setUserBean(this.mUserBean);
-        messageBean.setSendId("11111");
+        messageBean.setMessageId("11111");
         messageBean.setReceiveId("111");
         messageBean.setCreateTime(new Date().getTime());
 
 
-        sendMsg(messageBean);
         mChatMessageAdapter.add(messageBean);
         recyclerViewScroll.moveBottom( true);
+        sendMsg(messageBean);
+
     }
 
     @Override
@@ -638,7 +639,7 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setType(MessageBean.TYPE_AUDIO);
         messageBean.setContent("file://" + filepath);
         messageBean.setUserBean(mUserBean);
-        messageBean.setSendId("111");
+        messageBean.setMessageId("111");
         messageBean.setSendCode("222");
         messageBean.setDuration(mAudioRecord.getDuration());
         messageBean.setReceiveId("11");
@@ -655,22 +656,26 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
         messageBean.setType(MessageBean.TYPE_IMAGE);
         messageBean.setContent("file://" + filepath);
         messageBean.setUserBean(mUserBean);
-        messageBean.setSendId("111");
+        messageBean.setMessageId("111");
         messageBean.setSendCode("222");
         mChatMessageAdapter.add(messageBean);
         return messageBean;
     }
-
-    private void sendMsg(MessageBean messageBean) {
+    // 调用发送消息的统一接口
+    private void sendMsg(final MessageBean messageBean) {
 
         GlobalStaticVariable.getPtchat().getDataInteraction().sendData(messageBean, new SendCallback() {
             @Override
-            public void success() {
+            public void success(MessageBean msg) {
+                msg.setStatus(MessageBean.STATUS_SEND_SUCCESS);
+                mChatMessageAdapter.setMessageStatus(messageBean.getSendCode(), MessageBean.STATUS_SEND_SUCCESS);
                 logger.debug("success");
             }
 
             @Override
-            public void error() {
+            public void error(MessageBean msg) {
+                msg.setStatus(MessageBean.STATUS_SEND_FAIL);
+                mChatMessageAdapter.setMessageStatus(messageBean.getSendCode(), MessageBean.STATUS_SEND_FAIL);
                 logger.debug("error");
 
             }
@@ -801,13 +806,15 @@ public class ChatWindowActivity extends ToolBarActivity implements TextView.OnEd
             for (String filepath : strings) {
                 File file = new File(filepath);
                 if (file.exists()) {
-                    buildImage(filepath);
+                    MessageBean messageBean = buildImage(filepath);
+                    sendMsg(messageBean);
                 }
             }
         } else if (requestCode == HandlerCode.REQUEST_CAMERA) {
             File file = new File(cameraPhotoFile.getAbsolutePath());
             if (file.exists()) {
-                buildImage(cameraPhotoFile.getAbsolutePath());
+                MessageBean messageBean = buildImage(cameraPhotoFile.getAbsolutePath());
+                sendMsg(messageBean);
             }
         }
         recyclerViewScroll.moveBottom( false);

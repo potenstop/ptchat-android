@@ -10,9 +10,18 @@
     <string name="face">表情</string>
     <string name="personal_data">个人资料</string>
     <string name="message">消息</string>
+    <string name="image">image</string>
+
 
     <string name="save_phone">保存到手机</string>
     <string name="send_friend">发送给好友</string>
     <string name="save_succeed">保存成功</string>
     <string name="send_context_isnull">文本内容不能为空</string>
+
+    <string name="send_start">发送中</string>
+    <string name="send_success">已发送</string>
+    <string name="send_fail">发送失败</string>
+    <string name="read">已读</string>
+    <string name="unread">未读</string>
+
 </resources>
